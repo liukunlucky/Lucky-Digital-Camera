@@ -1,0 +1,56 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "/Users/monkey/.ohos/config/default_Lucky_Digital_Camera_12_ITohcnIiKNtlloU9_5bhQbLmxkU9_pqdrqOzxwYU=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001BF09D94DA59C3555E42D26980F34A966A34E256102839967EA1641332C037A237FD06EC3E76420D",
+          "profile": "/Users/monkey/.ohos/config/default_Lucky_Digital_Camera_12_ITohcnIiKNtlloU9_5bhQbLmxkU9_pqdrqOzxwYU=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "/Users/monkey/.ohos/config/default_Lucky_Digital_Camera_12_ITohcnIiKNtlloU9_5bhQbLmxkU9_pqdrqOzxwYU=.p12",
+          "storePassword": "0000001B3C9245BD3C969C70A611903F19A282B8451D005CA923F004136069AF79FDDB17511AA27E9875B1"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "targetSdkVersion": "5.0.5(17)",
+        "compatibleSdkVersion": "5.0.5(17)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}
