@@ -1,6 +1,7 @@
 {
   "src": [
     "pages/Index",
-    "pages/CameraDetail"
+    "pages/CameraDetail",
+    "pages/TestCameraData"
   ]
 }

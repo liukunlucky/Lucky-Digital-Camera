@@ -3,7 +3,7 @@
       "name_en": "Canon",
       "name_zh": "佳能",
       "website": "https://www.canon.com",
-      "logo_url": "https://www.canon.com/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdtm-23qq.png",
       "country_region": "日本",
       "founded_year": 1937,
       "parent_company": "Canon Inc."
@@ -12,7 +12,7 @@
       "name_en": "Nikon",
       "name_zh": "尼康",
       "website": "https://www.nikon.com",
-      "logo_url": "https://www.nikon.com/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdvt-1xoo.png",
       "country_region": "日本",
       "founded_year": 1917,
       "parent_company": "Nikon Corporation"
@@ -21,7 +21,7 @@
       "name_en": "Sony",
       "name_zh": "索尼",
       "website": "https://www.sony.com",
-      "logo_url": "https://www.sony.com/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdwv-1tq2.png",
       "country_region": "日本",
       "founded_year": 1946,
       "parent_company": "Sony Group Corporation"
@@ -30,25 +30,25 @@
       "name_en": "Fujifilm",
       "name_zh": "富士",
       "website": "https://www.fujifilm.com",
-      "logo_url": "https://www.fujifilm.com/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdur-ngt.png",
       "country_region": "日本",
       "founded_year": 1934,
       "parent_company": "FUJIFILM Holdings Corporation"
     },
     {
       "name_en": "Panasonic (LUMIX)",
-      "name_zh": "松下（LUMIX）",
+      "name_zh": "松下",
       "website": "https://www.panasonic.com",
-      "logo_url": "https://www.panasonic.com/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdw3-kg7.png",
       "country_region": "日本",
       "founded_year": 1918,
       "parent_company": "Panasonic Corporation"
     },
     {
       "name_en": "OM SYSTEM (Olympus)",
-      "name_zh": "OM SYSTEM（原奥林巴斯影像）",
+      "name_zh": "奥林巴斯",
       "website": "https://www.om-system.com",
-      "logo_url": "https://www.om-system.com/favicon.ico",
+      "logo_url": "https://mma.prnewswire.com/media/2610435/Square_OM_SYSTEM_Logo.jpg",
       "country_region": "日本",
       "founded_year": 2021,
       "parent_company": "OM Digital Solutions"
@@ -57,7 +57,7 @@
       "name_en": "Leica",
       "name_zh": "徕卡",
       "website": "https://leica-camera.com",
-      "logo_url": "https://leica-camera.com/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdvi-81l.png",
       "country_region": "德国",
       "founded_year": 1914,
       "parent_company": "Leica Camera AG"
@@ -66,7 +66,7 @@
       "name_en": "Hasselblad",
       "name_zh": "哈苏",
       "website": "https://www.hasselblad.com",
-      "logo_url": "https://www.hasselblad.com/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdv9-o24.jpg",
       "country_region": "瑞典",
       "founded_year": 1941,
       "parent_company": "DJI（大疆）"
@@ -75,7 +75,7 @@
       "name_en": "Pentax",
       "name_zh": "宾得",
       "website": "https://www.ricoh-imaging.co.jp/english/",
-      "logo_url": "https://www.ricoh-imaging.co.jp/english/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdw9-1hyo.png",
       "country_region": "日本",
       "founded_year": 1919,
       "parent_company": "Ricoh Imaging"
@@ -84,7 +84,7 @@
       "name_en": "Ricoh",
       "name_zh": "理光",
       "website": "https://www.ricoh.com",
-      "logo_url": "https://www.ricoh.com/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdwg-1szb.png",
       "country_region": "日本",
       "founded_year": 1936,
       "parent_company": "Ricoh Company, Ltd."
@@ -93,7 +93,7 @@
       "name_en": "Sigma",
       "name_zh": "适马",
       "website": "https://www.sigma-global.com",
-      "logo_url": "https://www.sigma-global.com/favicon.ico",
+      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdwp-8au.png",
       "country_region": "日本",
       "founded_year": 1961,
       "parent_company": "Sigma Corporation"
@@ -102,7 +102,7 @@
       "name_en": "GoPro",
       "name_zh": "GoPro",
       "website": "https://gopro.com",
-      "logo_url": "https://gopro.com/favicon.ico",
+      "logo_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRceCl6aKENb_Xn_sNryvBOul9sbr2-qsEorw&s",
       "country_region": "美国",
       "founded_year": 2002,
       "parent_company": "GoPro, Inc."
@@ -111,7 +111,7 @@
       "name_en": "DJI",
       "name_zh": "大疆",
       "website": "https://www.dji.com",
-      "logo_url": "https://www.dji.com/favicon.ico",
+      "logo_url": "https://www-cdn.djiits.com/dps/de46652dd99c67d4f8d17607e3bf0dce.jpg",
       "country_region": "中国",
       "founded_year": 2006,
       "parent_company": "DJI"
@@ -120,63 +120,9 @@
       "name_en": "Insta360",
       "name_zh": "影石Insta360",
       "website": "https://www.insta360.com",
-      "logo_url": "https://www.insta360.com/favicon.ico",
+      "logo_url": "https://obs-hcpn-cpc-data-cn-02.obs.cn-north-4.myhuaweicloud.com/marketPlaceFile/a39fbee122124df195f794de543ed82euPDvfjrCR4FDV5eoIyK/logo.jpg",
       "country_region": "中国",
       "founded_year": 2015,
       "parent_company": "Insta360"
-    },
-    {
-      "name_en": "Phase One",
-      "name_zh": "飞思",
-      "website": "https://www.phaseone.com",
-      "logo_url": "https://www.phaseone.com/favicon.ico",
-      "country_region": "丹麦",
-      "founded_year": 1993,
-      "parent_company": "Phase One A/S"
-    },
-    {
-      "name_en": "RED Digital Cinema",
-      "name_zh": "RED数字电影",
-      "website": "https://www.red.com",
-      "logo_url": "https://www.red.com/favicon.ico",
-      "country_region": "美国",
-      "founded_year": 2005,
-      "parent_company": "RED.com, LLC"
-    },
-    {
-      "name_en": "Blackmagic Design",
-      "name_zh": "Blackmagic Design",
-      "website": "https://www.blackmagicdesign.com",
-      "logo_url": "https://www.blackmagicdesign.com/favicon.ico",
-      "country_region": "澳大利亚",
-      "founded_year": 2001,
-      "parent_company": "Blackmagic Design Pty Ltd"
-    },
-    {
-      "name_en": "ZEISS",
-      "name_zh": "蔡司",
-      "website": "https://www.zeiss.com/consumer-products",
-      "logo_url": "https://www.zeiss.com/favicon.ico",
-      "country_region": "德国",
-      "founded_year": 1846,
-      "parent_company": "Carl Zeiss AG"
-    },
-    {
-      "name_en": "Polaroid",
-      "name_zh": "宝丽来",
-      "website": "https://www.polaroid.com",
-      "logo_url": "https://www.polaroid.com/favicon.ico",
-      "country_region": "美国（现荷兰运营）",
-      "founded_year": 1937,
-      "parent_company": "Polaroid B.V."
-    },
-    {
-      "name_en": "Kodak",
-      "name_zh": "柯达",
-      "website": "https://www.kodak.com",
-      "logo_url": "https://www.kodak.com/favicon.ico",
-      "country_region": "美国",
-      "founded_year": 1888,
-      "parent_company": "Eastman Kodak Company"
     }
   ]

@@ -2,6 +2,7 @@ import { Camera } from '../model/Camera';
 import { cameraDataService } from '../service/CameraDataService';
 import { Brand } from '../model/Brand';
 import { brandDataService } from '../service/BrandDataService';
+import { CameraDataItem, cameraDataJsonService } from '../service/CameraDataJsonService';
 import router from '@ohos.router';
 
 @Component
@@ -12,28 +13,36 @@ export struct HomePage {
   @State brands: string[] = [];
   @State brandDetails: Brand[] = [];
   @State selectedBrand: string = '全部';
+  // 新增：camera_data.json相关状态
+  @State cameraDataItems: CameraDataItem[] = [];
+  @State filteredCameraDataItems: CameraDataItem[] = [];
+  @State dataJsonBrands: string[] = [];
 
   async aboutToAppear() {
-    this.cameras = cameraDataService.getAllCameras();
-    // 使用真实品牌数据
-    this.brands = await cameraDataService.getRealBrands();
+    // 加载camera_data.json数据
+    this.cameraDataItems = await cameraDataJsonService.getAllCameras();
+    this.dataJsonBrands = await cameraDataJsonService.getAllBrands();
+    this.brands = ['全部', ...this.dataJsonBrands];
+    
     // 加载品牌详细信息
     this.brandDetails = await brandDataService.getAllBrands();
+    
+    // 初始化筛选结果
     this.updateFilteredCameras();
   }
 
-  onSearchTextChange(text: string) {
+  async onSearchTextChange(text: string) {
     this.searchText = text;
-    this.updateFilteredCameras();
+    await this.updateFilteredCameras();
   }
 
-  onBrandChange(brand: string) {
+  async onBrandChange(brand: string) {
     this.selectedBrand = brand;
-    this.updateFilteredCameras();
+    await this.updateFilteredCameras();
   }
 
-  updateFilteredCameras() {
-    this.filteredCameras = cameraDataService.getCamerasByBrandAndSearch(
+  async updateFilteredCameras() {
+    this.filteredCameraDataItems = await cameraDataJsonService.getCamerasByBrandAndSearch(
       this.selectedBrand,
       this.searchText
     );
@@ -102,16 +111,14 @@ export struct HomePage {
 
       // 相机列表
       List() {
-        ForEach(this.filteredCameras, (camera: Camera) => {
+        ForEach(this.filteredCameraDataItems, (camera: CameraDataItem) => {
           ListItem() {
-            this.CameraCard(camera)
+            this.CameraDataCard(camera)
           }
           .margin({ bottom: 12 })
           .onClick(() => {
-            router.pushUrl({
-              url: 'pages/CameraDetail',
-              params: { cameraId: camera.id }
-            });
+            // 暂时跳转到详情页，后续可以扩展
+            console.info(`点击相机: ${camera.Brand} ${camera.Model}`);
           })
         })
       }
@@ -145,20 +152,22 @@ export struct HomePage {
         Column() {
           if (brandDetail && brandDetail.logo_url) {
             Image(brandDetail.logo_url)
-              .width(24)
-              .height(24)
-              .borderRadius(12)
-              .backgroundColor('#F8F9FA')
+              .width(32)
+              .height(32)
+              .objectFit(ImageFit.Contain)
+              .borderRadius(4)
+              .backgroundColor('#FFFFFF')
+              .padding(2)
           } else {
             // 默认品牌图标
             Text(brandName.charAt(0))
-              .fontSize(14)
+              .fontSize(16)
               .fontColor(this.selectedBrand === brandName ? '#FFFFFF' : '#3498DB')
               .fontWeight(FontWeight.Bold)
-              .width(24)
-              .height(24)
+              .width(32)
+              .height(32)
               .textAlign(TextAlign.Center)
-              .borderRadius(12)
+              .borderRadius(4)
               .backgroundColor(this.selectedBrand === brandName ? 'rgba(255,255,255,0.2)' : '#E3F2FD')
           }
           
@@ -171,9 +180,9 @@ export struct HomePage {
         }
       }
     }
-    .width(60)
-    .height(60)
-    .padding(8)
+    .width(70)
+    .height(70)
+    .padding(6)
     .backgroundColor(this.selectedBrand === brandName ? '#3498DB' : '#FFFFFF')
     .borderRadius(12)
     .border({
@@ -273,5 +282,62 @@ export struct HomePage {
     .borderRadius(12)
     .shadow({ radius: 4, color: '#00000010', offsetX: 0, offsetY: 2 })
     .padding(2)
+  }
+
+  @Builder
+  CameraDataCard(camera: CameraDataItem) {
+    Row() {
+      // 相机图片
+       Image($rawfile(cameraDataJsonService.getCameraImagePath(camera)))
+         .width(80)
+         .height(60)
+         .objectFit(ImageFit.Cover)
+         .borderRadius(8)
+         .margin({ right: 12 })
+
+      // 相机信息
+      Column({ space: 4 }) {
+        Text(camera.Model)
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+        Text(camera.Brand)
+          .fontSize(14)
+          .fontColor('#666666')
+
+        Row({ space: 8 }) {
+          if (camera.Year) {
+            Text(camera.Year + '年')
+              .fontSize(12)
+              .fontColor('#999999')
+          }
+          if (camera.Megapixels) {
+            Text(camera.Megapixels)
+              .fontSize(12)
+              .fontColor('#999999')
+          }
+        }
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+
+      // 箭头图标
+      Image($r('app.media.ic_arrow_right'))
+        .width(16)
+        .height(16)
+        .fillColor('#CCCCCC')
+    }
+    .width('100%')
+    .padding(16)
+    .backgroundColor(Color.White)
+    .borderRadius(12)
+    .shadow({
+      radius: 4,
+      color: '#1A000000',
+      offsetX: 0,
+      offsetY: 2
+    })
   }
 }
