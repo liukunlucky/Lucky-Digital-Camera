@@ -97,18 +97,36 @@ export interface CameraSpecs {
   special_features: string[]; // 特殊功能，如["静音拍摄", "像素偏移"]
 }
 
+// 价格历史记录接口
+export interface PriceHistoryItem {
+  date: string;
+  price_usd: number;
+  price_cny: number;
+  source: string;
+}
+
+// 评测信息接口
+export interface ReviewInfo {
+  source: string; // 评测来源
+  score: number; // 评分
+  review_url: string; // 评测链接
+  summary: string; // 评测摘要
+}
+
+// 奖项信息接口
+export interface AwardInfo {
+  award_name: string; // 奖项名称
+  organization: string; // 颁奖机构
+  year: number; // 获奖年份
+}
+
 // 价格信息接口
 export interface PriceInfo {
   launch_price_usd: number; // 发布价格（美元）
   launch_price_cny: number; // 发布价格（人民币）
   current_price_usd?: number; // 当前价格（美元）
   current_price_cny?: number; // 当前价格（人民币）
-  price_history: Array<{
-    date: string;
-    price_usd: number;
-    price_cny: number;
-    source: string;
-  }>; // 价格历史
+  price_history: PriceHistoryItem[]; // 价格历史
 }
 
 // 相机型号主接口
@@ -150,19 +168,10 @@ export interface CameraModel {
   competitors: string[]; // 竞品型号ID列表
   
   // 评测信息
-  reviews?: Array<{
-    source: string; // 评测来源
-    score: number; // 评分
-    review_url: string; // 评测链接
-    summary: string; // 评测摘要
-  }>;
+  reviews?: ReviewInfo[];
   
   // 奖项信息
-  awards?: Array<{
-    award_name: string; // 奖项名称
-    organization: string; // 颁奖机构
-    year: number; // 获奖年份
-  }>;
+  awards?: AwardInfo[];
   
   // 元数据
   created_at: string; // 数据创建时间

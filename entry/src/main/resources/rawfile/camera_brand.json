@@ -36,7 +36,7 @@
       "parent_company": "FUJIFILM Holdings Corporation"
     },
     {
-      "name_en": "Panasonic (LUMIX)",
+      "name_en": "Panasonic",
       "name_zh": "松下",
       "website": "https://www.panasonic.com",
       "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdw3-kg7.png",
@@ -45,7 +45,7 @@
       "parent_company": "Panasonic Corporation"
     },
     {
-      "name_en": "OM SYSTEM (Olympus)",
+      "name_en": "Olympus",
       "name_zh": "奥林巴斯",
       "website": "https://www.om-system.com",
       "logo_url": "https://mma.prnewswire.com/media/2610435/Square_OM_SYSTEM_Logo.jpg",
@@ -61,15 +61,6 @@
       "country_region": "德国",
       "founded_year": 1914,
       "parent_company": "Leica Camera AG"
-    },
-    {
-      "name_en": "Hasselblad",
-      "name_zh": "哈苏",
-      "website": "https://www.hasselblad.com",
-      "logo_url": "https://img-cms.pchome.net/publish/1k3/js/32/pqcdv9-o24.jpg",
-      "country_region": "瑞典",
-      "founded_year": 1941,
-      "parent_company": "DJI（大疆）"
     },
     {
       "name_en": "Pentax",
@@ -97,32 +88,5 @@
       "country_region": "日本",
       "founded_year": 1961,
       "parent_company": "Sigma Corporation"
-    },
-    {
-      "name_en": "GoPro",
-      "name_zh": "GoPro",
-      "website": "https://gopro.com",
-      "logo_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRceCl6aKENb_Xn_sNryvBOul9sbr2-qsEorw&s",
-      "country_region": "美国",
-      "founded_year": 2002,
-      "parent_company": "GoPro, Inc."
-    },
-    {
-      "name_en": "DJI",
-      "name_zh": "大疆",
-      "website": "https://www.dji.com",
-      "logo_url": "https://www-cdn.djiits.com/dps/de46652dd99c67d4f8d17607e3bf0dce.jpg",
-      "country_region": "中国",
-      "founded_year": 2006,
-      "parent_company": "DJI"
-    },
-    {
-      "name_en": "Insta360",
-      "name_zh": "影石Insta360",
-      "website": "https://www.insta360.com",
-      "logo_url": "https://obs-hcpn-cpc-data-cn-02.obs.cn-north-4.myhuaweicloud.com/marketPlaceFile/a39fbee122124df195f794de543ed82euPDvfjrCR4FDV5eoIyK/logo.jpg",
-      "country_region": "中国",
-      "founded_year": 2015,
-      "parent_company": "Insta360"
     }
   ]

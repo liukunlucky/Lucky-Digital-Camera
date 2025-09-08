@@ -1,4 +1,5 @@
 import { HomePage } from './HomePage';
+import { MemoryPage } from './MemoryPage';
 import { SettingPage } from './SettingPage';
 
 @Entry
@@ -12,13 +13,19 @@ struct Index {
       TabContent() {
         HomePage()
       }
-      .tabBar(this.TabBuilder('首页', 0, $r('app.media.ic_home')))
+      .tabBar(this.TabBuilder('首页', 0, $r('app.media.icon_home')))
+
+      // 回忆Tab
+      TabContent() {
+        MemoryPage()
+      }
+      .tabBar(this.TabBuilder('回忆', 1, $r('app.media.icon_memory')))
 
       // 设置Tab
       TabContent() {
         SettingPage()
       }
-      .tabBar(this.TabBuilder('设置', 1, $r('app.media.ic_settings')))
+      .tabBar(this.TabBuilder('设置', 2, $r('app.media.icon_settings')))
     }
     .width('100%')
     .height('100%')
@@ -36,11 +43,11 @@ struct Index {
       Image(icon)
         .width(24)
         .height(24)
-        .fillColor(this.currentTabIndex === index ? '#3498DB' : '#7F8C8D')
+        .fillColor(this.currentTabIndex === index ? $r('app.color.brand_color') : $r('app.color.secondary_text_color'))
       
       Text(title)
         .fontSize(12)
-        .fontColor(this.currentTabIndex === index ? '#3498DB' : '#7F8C8D')
+        .fontColor(this.currentTabIndex === index ? $r('app.color.brand_color') : $r('app.color.secondary_text_color'))
         .margin({ top: 4 })
     }
     .width('100%')
