@@ -2,6 +2,8 @@
   "src": [
     "pages/Index",
     "pages/CameraDetail",
-    "pages/TestCameraData"
+    "pages/TestCameraData",
+    "pages/SuggestionDetail",
+    "pages/MemoryPage"
   ]
 }

@@ -9,6 +9,8 @@ import promptAction from '@ohos.promptAction';
 export struct SettingPage {
   @State isDarkMode: boolean = false;
   @State showAboutSheet: boolean = false;
+  @State showFeedbackSheet: boolean = false;
+  @State feedbackText: string = '';
   @State versionName: string = '';
   private context = getContext(this) as common.UIAbilityContext;
   @StorageProp('enableDarkMode') enableDarkMode: boolean = false;
@@ -70,6 +72,10 @@ export struct SettingPage {
             .selectedColor($r('app.color.brand_color'))
             .switchPointColor('#FFFFFF')
             .onChange(async (isOn: boolean) => {
+              // 关闭所有弹窗，防止模式切换时状态异常
+              this.showAboutSheet = false;
+              this.showFeedbackSheet = false;
+              
               this.isDarkMode = isOn;
               this.enableDarkMode = isOn;
               if (isOn) {
@@ -121,6 +127,45 @@ export struct SettingPage {
           });
         })
 
+        // 问题反馈
+        Row() {
+          Column() {
+            Text('问题反馈')
+              .fontSize(16)
+              .fontColor($r('app.color.primary_text_color'))
+              .fontWeight(FontWeight.Medium)
+            Text('遇到问题？告诉我们吧')
+              .fontSize(14)
+              .fontColor($r('app.color.secondary_text_color'))
+              .margin({ top: 2 })
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+
+          Image($r('app.media.ic_arrow_right'))
+            .width(20)
+            .height(20)
+            .fillColor($r('app.color.tertiary_text_color'))
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+        .backgroundColor($r('app.color.card_background_color'))
+        .borderRadius(12)
+        .margin({ top: 12 })
+        .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
+        .onClick(() => {
+          this.showFeedbackSheet = true;
+        })
+        .bindSheet($$this.showFeedbackSheet, this.FeedbackSheet(), {
+      height: 350,
+      dragBar: true,
+      showClose: false,
+      backgroundColor: $r('app.color.surface_color'),
+      onDisappear: () => {
+        // 移除状态重置，避免与深色模式切换冲突
+      }
+    })
+
         // 关于应用
         Row() {
           Column() {
@@ -164,7 +209,7 @@ export struct SettingPage {
       showClose: false,
       backgroundColor: $r('app.color.surface_color'),
       onDisappear: () => {
-        this.showAboutSheet = false;
+        // 移除状态重置，避免与深色模式切换冲突
       }
     })
   }
@@ -221,6 +266,78 @@ export struct SettingPage {
         .fontSize(12)
         .fontColor($r('app.color.tertiary_text_color'))
         .margin({ bottom: 20 })
+    }
+    .width('100%')
+    .height('100%')
+    .padding({ left: 24, right: 24 })
+    .justifyContent(FlexAlign.Start)
+    .alignItems(HorizontalAlign.Center)
+  }
+
+  @Builder
+  FeedbackSheet() {
+    Column() {
+      // Sheet标题
+      Text('问题反馈')
+        .fontSize(20)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.primary_text_color'))
+        .margin({ top: 20, bottom: 20 })
+
+      // 输入提示
+      Text('请描述您遇到的问题或建议')
+        .fontSize(14)
+        .fontColor($r('app.color.secondary_text_color'))
+        .margin({ bottom: 16 })
+        .alignSelf(ItemAlign.Start)
+
+      // 输入框
+      TextArea({
+        placeholder: '请输入您的问题或建议...',
+        text: this.feedbackText
+      })
+        .width('100%')
+        .height(120)
+        .fontSize(14)
+        .fontColor($r('app.color.primary_text_color'))
+        .backgroundColor($r('app.color.input_background_color'))
+        .borderRadius(8)
+        .padding(12)
+        .maxLength(100)
+        .onChange((value: string) => {
+          this.feedbackText = value;
+        })
+        .margin({ bottom: 8 })
+
+      // 字数统计
+      Text(`${this.feedbackText.length}/100`)
+        .fontSize(12)
+        .fontColor($r('app.color.tertiary_text_color'))
+        .alignSelf(ItemAlign.End)
+        .margin({ bottom: 24 })
+
+      // 提交按钮
+      Button('提交反馈')
+        .width('100%')
+        .height(44)
+        .fontSize(16)
+        .fontColor('#FFFFFF')
+        .backgroundColor($r('app.color.brand_color'))
+        .borderRadius(8)
+        .enabled(this.feedbackText.trim().length > 0)
+        .opacity(this.feedbackText.trim().length > 0 ? 1 : 0.5)
+        .onClick(() => {
+          if (this.feedbackText.trim().length > 0) {
+            promptAction.showToast({
+              message: '已提交',
+              duration: 2000
+            });
+            this.feedbackText = '';
+            this.showFeedbackSheet = false;
+          }
+        })
+
+      Blank()
     }
     .width('100%')
     .height('100%')

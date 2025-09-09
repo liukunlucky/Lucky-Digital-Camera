@@ -51,6 +51,34 @@
     {
       "name": "brand_color_light",
       "value": "#F34F4040"
+    },
+    {
+      "name": "tag_background_primary",
+      "value": "#E8F4FD"
+    },
+    {
+      "name": "tag_background_secondary",
+      "value": "#F0F8F0"
+    },
+    {
+      "name": "tag_background_accent",
+      "value": "#FFF4E6"
+    },
+    {
+      "name": "tag_text_primary",
+      "value": "#1976D2"
+    },
+    {
+      "name": "tag_text_secondary",
+      "value": "#388E3C"
+    },
+    {
+      "name": "tag_text_accent",
+      "value": "#F57C00"
+    },
+    {
+      "name": "input_background_color",
+      "value": "#F8F9FA"
     }
   ]
 }

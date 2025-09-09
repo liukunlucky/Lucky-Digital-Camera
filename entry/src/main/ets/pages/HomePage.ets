@@ -196,21 +196,6 @@ export struct HomePage {
           .onChange((value: string) => {
             this.onSearchTextChange(value);
           })
-
-        Button() {
-          Image($r('app.media.ic_search'))
-            .width(20)
-            .height(20)
-            .fillColor('#FFFFFF')
-        }
-        .width(40)
-        .height(40)
-        .borderRadius(20)
-        .backgroundColor($r('app.color.brand_color'))
-        .margin({ left: 12 })
-        .onClick(() => {
-          // 搜索逻辑已在onChange中处理
-        })
       }
       .width('100%')
       .padding({ left: 16, right: 16, top: 12, bottom: 12 })

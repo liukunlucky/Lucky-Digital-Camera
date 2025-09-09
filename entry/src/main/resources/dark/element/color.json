@@ -51,6 +51,10 @@
     {
       "name": "tab_bar_bg",
       "value": "#1E1E1E"
+    },
+    {
+      "name": "input_background_color",
+      "value": "#2D2D2D"
     }
   ]
 }

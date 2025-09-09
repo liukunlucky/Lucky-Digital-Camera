@@ -1,11 +1,20 @@
 import { HomePage } from './HomePage';
-import { MemoryPage } from './MemoryPage';
+import { SuggestionPage } from './SuggestionPage';
+import { MyEquipmentPage } from './MyEquipmentPage';
 import { SettingPage } from './SettingPage';
+import { myEquipmentService } from '../service/MyEquipmentService';
+import { common } from '@kit.AbilityKit';
 
 @Entry
 @Component
 struct Index {
   @State currentTabIndex: number = 0;
+
+  aboutToAppear() {
+    // 初始化我的器材服务
+    const context = getContext(this) as common.UIAbilityContext;
+    myEquipmentService.init(context);
+  }
 
   build() {
     Tabs({ index: this.currentTabIndex }) {
@@ -15,17 +24,23 @@ struct Index {
       }
       .tabBar(this.TabBuilder('首页', 0, $r('app.media.icon_home')))
 
-      // 回忆Tab
+      // 建议Tab
       TabContent() {
-        MemoryPage()
+        SuggestionPage()
       }
-      .tabBar(this.TabBuilder('回忆', 1, $r('app.media.icon_memory')))
+      .tabBar(this.TabBuilder('购买建议', 1, $r('app.media.ic_suggestion')))
+
+      // 我的器材Tab
+      TabContent() {
+        MyEquipmentPage()
+      }
+      .tabBar(this.TabBuilder('我的器材', 2, $r('app.media.ic_mine')))
 
       // 设置Tab
       TabContent() {
         SettingPage()
       }
-      .tabBar(this.TabBuilder('设置', 2, $r('app.media.icon_settings')))
+      .tabBar(this.TabBuilder('设置', 3, $r('app.media.icon_settings')))
     }
     .width('100%')
     .height('100%')

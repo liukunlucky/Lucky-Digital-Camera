@@ -1,22 +1,18 @@
 import { CameraDataItem, cameraDataJsonService } from '../service/CameraDataJsonService';
 import router from '@ohos.router';
 import { promptAction } from '@kit.ArkUI';
-import { memoryDataService, MemoryCamera } from '../service/MemoryDataService';
-import { componentSnapshot } from '@kit.ArkUI';
-import { photoAccessHelper } from '@kit.MediaLibraryKit';
-import { common } from '@kit.AbilityKit';
+import { MemoryCamera, memoryDataService } from '../service/MemoryDataService';
 import { image } from '@kit.ImageKit';
-import { fileIo } from '@kit.CoreFileKit';
 import { ScreenshotUtil } from '../utils/ScreenshotUtil';
+import { MyEquipmentItem } from '../model/MyEquipmentModel';
+import { myEquipmentService } from '../service/MyEquipmentService';
 
+@Entry
 @Component
-@Preview
 export struct MemoryPage {
   @State memoryCameras: MemoryCamera[] = [];
   @State isShowingShareSheet: boolean = false;
-  @State isShowingCameraSelector: boolean = false;
-  @State availableCameras: CameraDataItem[] = [];
-  @State selectedCameras: Set<string> = new Set(); // 存储选中的相机ID
+  @State myEquipmentList: MyEquipmentItem[] = [];
 
   async aboutToAppear() {
     // 异步初始化，避免阻塞主线程
@@ -29,31 +25,54 @@ export struct MemoryPage {
       // 初始化数据存储服务
       await memoryDataService.init();
       
-      // 加载回忆相机数据
-      await this.loadMemoryCameras();
+      // 加载我的器材数据
+      this.loadMyEquipment();
       
-      // 加载可用相机数据
-      await this.loadAvailableCameras();
+      // 从我的器材生成回忆数据
+      await this.generateMemoriesFromEquipment();
     } catch (error) {
       console.error('数据初始化失败:', error);
     }
   }
 
-  // 加载回忆相机数据
-  private async loadMemoryCameras() {
+  // 加载我的器材数据
+  private loadMyEquipment() {
     try {
-      this.memoryCameras = await memoryDataService.loadMemoryCameras();
+      this.myEquipmentList = myEquipmentService.getAllEquipment();
     } catch (error) {
-      console.error('加载回忆数据失败:', error);
+      console.error('加载我的器材数据失败:', error);
     }
   }
 
-  // 加载可用相机数据
-  private async loadAvailableCameras() {
+  // 从我的器材生成回忆数据
+  private async generateMemoriesFromEquipment() {
     try {
-      this.availableCameras = await cameraDataJsonService.getAllCameras();
+      if (this.myEquipmentList.length === 0) {
+        this.memoryCameras = [];
+        return;
+      }
+
+      const memories: MemoryCamera[] = [];
+      for (const equipment of this.myEquipmentList) {
+        if (equipment.cameraDataItem) {
+          const memoryCamera: MemoryCamera = {
+            id: this.generateCameraId(equipment.cameraDataItem),
+            camera: equipment.cameraDataItem,
+            addedDate: equipment.addTime || new Date().toISOString(),
+            description: `我的${equipment.brand} ${equipment.model}`
+          };
+          memories.push(memoryCamera);
+        }
+      }
+
+      // 按添加时间排序
+      memories.sort((a, b) => new Date(a.addedDate).getTime() - new Date(b.addedDate).getTime());
+      this.memoryCameras = memories;
+      
+      // 保存到回忆服务
+      await this.saveMemoryCameras();
     } catch (error) {
-      console.error('加载可用相机数据失败:', error);
+      console.error('生成回忆数据失败:', error);
     }
   }
 
@@ -176,7 +195,7 @@ export struct MemoryPage {
       .justifyContent(FlexAlign.Center)
 
       if (this.memoryCameras.length === 0) {
-        // 空状态 - 只有在没有回忆时才显示添加入口
+        // 空状态 - 提示用户去我的器材页面添加器材
         Column() {
           Image($r('app.media.icon_memory'))
             .width(80)
@@ -184,19 +203,19 @@ export struct MemoryPage {
             .fillColor('#BDC3C7')
             .margin({ bottom: 20 })
           
-          Text('您还没有回忆')
+          Text('您还没有器材回忆')
             .fontSize(20)
             .fontWeight(FontWeight.Medium)
             .fontColor($r('app.color.primary_text_color'))
             .margin({ bottom: 10 })
           
-          Text('创建你曾用过的相机回忆吧')
+          Text('请先在"我的器材"页面添加您的相机')
             .fontSize(16)
             .fontColor($r('app.color.secondary_text_color'))
             .margin({ bottom: 30 })
           
-          // 添加回忆按钮
-          Button('添加回忆')
+          // 跳转到我的器材页面按钮
+          Button('去添加器材')
             .fontSize(16)
             .fontColor('#FFFFFF')
             .backgroundColor($r('app.color.brand_color'))
@@ -210,10 +229,10 @@ export struct MemoryPage {
               offsetY: 4 
             })
             .onClick(() => {
-              this.isShowingCameraSelector = true;
+              router.pushUrl({ url: 'pages/Index' });
             })
           
-          Text('从相机列表中选择您使用过的相机')
+          Text('添加器材后，这里将自动生成您的相机回忆')
             .fontSize(14)
             .fontColor($r('app.color.secondary_text_color'))
             .margin({ top: 10 })
@@ -258,21 +277,6 @@ export struct MemoryPage {
               .onClick(() => {
                 this.shareMemory();
               })
-              
-              // 删除按钮
-              Button({ type: ButtonType.Circle }) {
-                Image($r('app.media.icon_delete'))
-                  .width(20)
-                  .height(20)
-                  .fillColor('#FFFFFF')
-              }
-              .width(40)
-              .height(40)
-              .backgroundColor('#E74C3C')
-              .border({ width: 1, color: '#C0392B' })
-              .onClick(() => {
-                this.showDeleteRouteConfirmDialog();
-              })
             }
           }
           .width('100%')
@@ -313,203 +317,11 @@ export struct MemoryPage {
     .width('100%')
     .height('100%')
     .backgroundColor($r('app.color.background_color'))
-    .bindSheet($$this.isShowingCameraSelector, this.CameraSelectorSheet(), {
-      height: '80%',
-      dragBar: true,
-      showClose: false,
-      backgroundColor: $r('app.color.surface_color'),
-      onDisappear: () => {
-        this.isShowingCameraSelector = false;
-      }
-    })
   }
 
-  @Builder
-  CameraSelectorSheet() {
-    Column({ space: 16 }) {
-      // 标题
-      Text('选择相机')
-        .fontSize(20)
-        .fontWeight(FontWeight.Bold)
-        .fontColor($r('app.color.primary_text_color'))
-        .margin({ top: 20, bottom: 10 })
-        .textAlign(TextAlign.Center)
-        .width('100%')
 
-      // 相机列表
-      List({ space: 12 }) {
-        ForEach(this.availableCameras, (camera: CameraDataItem) => {
-          ListItem() {
-            this.CameraSelectItem(camera)
-          }
-        })
-      }
-      .width('100%')
-      .layoutWeight(1)
-      .padding({ left: 16, right: 16 })
-      
-      // 底部操作栏
-      Row({ space: 12 }) {
-        Button('取消')
-          .fontSize(16)
-          .fontColor($r('app.color.primary_text_color'))
-          .backgroundColor($r('app.color.surface_color'))
-          .borderRadius(8)
-          .layoutWeight(1)
-          .onClick(() => {
-            this.selectedCameras.clear();
-            this.isShowingCameraSelector = false;
-          })
-        
-        Button(`添加选中 (${this.selectedCameras.size})`)
-          .fontSize(16)
-          .fontColor('#FFFFFF')
-          .backgroundColor($r('app.color.brand_color'))
-          .borderRadius(8)
-          .layoutWeight(1)
-          .enabled(this.selectedCameras.size > 0)
-          .onClick(() => {
-            this.addSelectedCamerasToMemory();
-          })
-      }
-      .width('100%')
-      .padding({ left: 20, right: 20, bottom: 20 })
-    }
-    .width('100%')
-    .height('100%')
-  }
 
-  @Builder
-  CameraSelectItem(camera: CameraDataItem) {
-    Row({ space: 12 }) {
-      // 复选框
-      Checkbox({ name: this.generateCameraId(camera), group: 'cameraGroup' })
-        .select(this.selectedCameras.has(this.generateCameraId(camera)))
-        .selectedColor($r('app.color.brand_color'))
-        .onChange((value: boolean) => {
-          const cameraId = this.generateCameraId(camera);
-          if (value) {
-            this.selectedCameras.add(cameraId);
-          } else {
-            this.selectedCameras.delete(cameraId);
-          }
-        })
-      
-      // 相机图片
-      Image($rawfile(cameraDataJsonService.getCameraImagePath(camera)))
-        .width(60)
-        .height(60)
-        .borderRadius(8)
-        .objectFit(ImageFit.Cover)
-        .alt($r('app.media.foreground'))
 
-      // 相机信息
-      Column({ space: 4 }) {
-        Text(camera.Model)
-          .fontSize(16)
-          .fontWeight(FontWeight.Medium)
-          .fontColor($r('app.color.primary_text_color'))
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-
-        Text(camera.Brand)
-          .fontSize(14)
-          .fontColor($r('app.color.secondary_text_color'))
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-    }
-    .width('100%')
-    .padding(16)
-    .backgroundColor(this.selectedCameras.has(this.generateCameraId(camera)) ? 
-      'rgba(255, 107, 107, 0.1)' : $r('app.color.surface_color'))
-    .borderRadius(12)
-    .border({
-      width: this.selectedCameras.has(this.generateCameraId(camera)) ? 2 : 0,
-      color: $r('app.color.brand_color')
-    })
-    .shadow({
-      radius: 4,
-      color: 'rgba(0, 0, 0, 0.1)',
-      offsetX: 0,
-      offsetY: 2
-    })
-    .onClick(() => {
-      const cameraId = this.generateCameraId(camera);
-      if (this.selectedCameras.has(cameraId)) {
-        this.selectedCameras.delete(cameraId);
-      } else {
-        this.selectedCameras.add(cameraId);
-      }
-    })
-  }
-
-  // 添加相机到回忆
-  private async addCameraToMemory(camera: CameraDataItem) {
-    try {
-      const memoryCamera: MemoryCamera = {
-        id: this.generateCameraId(camera),
-        camera: camera,
-        addedDate: new Date().toISOString()
-      };
-
-      await memoryDataService.addMemoryCamera(memoryCamera);
-      await this.loadMemoryCameras();
-      
-      this.isShowingCameraSelector = false;
-      
-      promptAction.showToast({
-        message: `已添加 ${camera.Brand} ${camera.Model} 到回忆`,
-        duration: 2000
-      });
-    } catch (error) {
-      console.error('添加相机失败:', error);
-      promptAction.showToast({
-        message: '添加失败，请重试',
-        duration: 2000
-      });
-    }
-  }
-
-  // 批量添加选中的相机到回忆
-  private async addSelectedCamerasToMemory() {
-    if (this.selectedCameras.size === 0) {
-      return;
-    }
-
-    try {
-      const selectedCameraList = this.availableCameras.filter(camera => 
-        this.selectedCameras.has(this.generateCameraId(camera))
-      );
-
-      for (const camera of selectedCameraList) {
-        const memoryCamera: MemoryCamera = {
-          id: this.generateCameraId(camera),
-          camera: camera,
-          addedDate: new Date().toISOString()
-        };
-        await memoryDataService.addMemoryCamera(memoryCamera);
-      }
-
-      await this.loadMemoryCameras();
-      
-      this.selectedCameras.clear();
-      this.isShowingCameraSelector = false;
-      
-      promptAction.showToast({
-        message: `已添加 ${selectedCameraList.length} 台相机到回忆`,
-        duration: 2000
-      });
-    } catch (error) {
-      console.error('添加相机到回忆失败:', error);
-      promptAction.showToast({
-        message: '添加失败，请重试',
-        duration: 2000
-      });
-    }
-  }
 
    // 回忆时间线项目 - 自定义路线图
    @Builder
@@ -895,13 +707,6 @@ export struct MemoryPage {
           .fontSize(16)
           .fontColor('#FFFFFF')
           .backgroundColor('#007AFF')
-          .borderRadius(8)
-          .padding({ left: 20, right: 20, top: 8, bottom: 8 })
-
-        Button('删除')
-          .fontSize(16)
-          .fontColor('#FFFFFF')
-          .backgroundColor('#E74C3C')
           .borderRadius(8)
           .padding({ left: 20, right: 20, top: 8, bottom: 8 })
       }
