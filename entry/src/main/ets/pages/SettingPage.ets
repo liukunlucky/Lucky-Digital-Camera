@@ -166,6 +166,43 @@ export struct SettingPage {
       }
     })
 
+        // 检查更新
+        Row() {
+          Column() {
+            Text('检查更新')
+              .fontSize(16)
+              .fontColor($r('app.color.primary_text_color'))
+              .fontWeight(FontWeight.Medium)
+            Text('检查应用是否有新版本')
+              .fontSize(14)
+              .fontColor($r('app.color.secondary_text_color'))
+              .margin({ top: 2 })
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+
+          Image($r('app.media.ic_arrow_right'))
+            .width(20)
+            .height(20)
+            .fillColor($r('app.color.tertiary_text_color'))
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
+        .backgroundColor($r('app.color.card_background_color'))
+        .borderRadius(12)
+        .margin({ top: 12 })
+        .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
+        .onClick(() => {
+          AlertDialog.show({
+            title: '检查更新',
+            message: '当前已是最新版本',
+            primaryButton: {
+              value: '确定',
+              action: () => {}
+            }
+          });
+        })
+
         // 关于应用
         Row() {
           Column() {
@@ -212,6 +249,8 @@ export struct SettingPage {
         // 移除状态重置，避免与深色模式切换冲突
       }
     })
+
+
   }
 
   @Builder

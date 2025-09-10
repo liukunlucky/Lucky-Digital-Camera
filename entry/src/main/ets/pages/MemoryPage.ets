@@ -54,11 +54,13 @@ export struct MemoryPage {
 
       const memories: MemoryCamera[] = [];
       for (const equipment of this.myEquipmentList) {
-        if (equipment.cameraDataItem) {
+        if (equipment.cameraDataItem && equipment.transactions.length > 0) {
+          // 使用最早的交易日期作为回忆日期
+          const earliestTransaction = equipment.transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
           const memoryCamera: MemoryCamera = {
             id: this.generateCameraId(equipment.cameraDataItem),
             camera: equipment.cameraDataItem,
-            addedDate: equipment.addTime || new Date().toISOString(),
+            addedDate: earliestTransaction.date,
             description: `我的${equipment.brand} ${equipment.model}`
           };
           memories.push(memoryCamera);
@@ -79,6 +81,19 @@ export struct MemoryPage {
   // 为CameraDataItem生成唯一ID
   private generateCameraId(camera: CameraDataItem): string {
     return `${camera.Brand}_${camera.Model}_${camera.Year}`.replace(/\s+/g, '_');
+  }
+
+  // 格式化日期显示
+  private formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch (error) {
+      return dateString;
+    }
   }
 
 
@@ -264,19 +279,26 @@ export struct MemoryPage {
             // 操作按钮组
             Row({ space: 8 }) {
               // 分享按钮
-              Button({ type: ButtonType.Circle }) {
-                Image($r('app.media.icon_share'))
-                  .width(20)
-                  .height(20)
-                  .fillColor('#FFFFFF')
+              Column({ space: 4 }) {
+                Button({ type: ButtonType.Circle }) {
+                  Image($r('app.media.icon_share'))
+                    .width(20)
+                    .height(20)
+                    .fillColor('#FFFFFF')
+                }
+                .width(40)
+                .height(40)
+                .backgroundColor($r('app.color.brand_color'))
+                .onClick(() => {
+                  this.shareMemory();
+                })
+                
+                Text('分享')
+                  .fontSize(12)
+                  .fontColor($r('app.color.secondary_text_color'))
+                  .textAlign(TextAlign.Center)
               }
-              .width(40)
-              .height(40)
-              .backgroundColor('#007AFF')
-              .border({ width: 1, color: '#0056CC' })
-              .onClick(() => {
-                this.shareMemory();
-              })
+              .alignItems(HorizontalAlign.Center)
             }
           }
           .width('100%')
@@ -288,7 +310,7 @@ export struct MemoryPage {
           // 时间线列表 - 使用Scroll包装以支持完整截图
           Scroll() {
             Column({ space: 8 }) {
-              ForEach([...this.memoryCameras].sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime()), (memory: MemoryCamera, index: number) => {
+              ForEach([...this.memoryCameras].sort((a, b) => new Date(a.addedDate).getTime() - new Date(b.addedDate).getTime()), (memory: MemoryCamera, index: number) => {
                 this.MemoryTimelineItem(memory, index)
               })
             }
@@ -518,8 +540,8 @@ export struct MemoryPage {
         Column({ space: 16 }) {
           // 相机图片
           Image($rawfile(cameraDataJsonService.getCameraImagePath(memory.camera)))
-            .width(150)
-            .height(112)
+            .width(170)
+            .height(127)
             .objectFit(ImageFit.Cover)
             .borderRadius(20)
             .alt($r('app.media.foreground'))
@@ -534,10 +556,10 @@ export struct MemoryPage {
           // 相机信息
           Column({ space: 8 }) {
             Text(`${memory.camera.Brand} ${memory.camera.Model}`)
-              .fontSize(17)
+              .fontSize(15)
               .fontWeight(FontWeight.Bold)
               .fontColor('#2C3E50')
-              .maxLines(1)
+              .maxLines(2)
               .textOverflow({ overflow: TextOverflow.Ellipsis })
               .textAlign(TextAlign.Center)
               .shadow({ 
@@ -547,7 +569,7 @@ export struct MemoryPage {
                 offsetY: 1 
               })
             
-            Text(memory.addedDate)
+            Text(this.formatDate(memory.addedDate))
               .fontSize(13)
               .fontColor('#7F8C8D')
               .textAlign(TextAlign.Center)
@@ -571,7 +593,7 @@ export struct MemoryPage {
           }
           .width('100%')
         }
-        .width(170)
+        .width(200)
         .padding(20)
         .backgroundColor('rgba(255, 255, 255, 0.95)')
         .borderRadius(24)
@@ -716,7 +738,7 @@ export struct MemoryPage {
 
       // 时间线列表内容
       Column({ space: 8 }) {
-        ForEach([...this.memoryCameras].sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime()), (memory: MemoryCamera, index: number) => {
+        ForEach([...this.memoryCameras].sort((a, b) => new Date(a.addedDate).getTime() - new Date(b.addedDate).getTime()), (memory: MemoryCamera, index: number) => {
           this.MemoryTimelineItem(memory, index)
         })
       }
@@ -748,7 +770,7 @@ export struct MemoryPage {
 
       // 时间线列表内容
       Column({ space: 8 }) {
-        ForEach([...this.memoryCameras].sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime()), (memory: MemoryCamera, index: number) => {
+        ForEach([...this.memoryCameras].sort((a, b) => new Date(a.addedDate).getTime() - new Date(b.addedDate).getTime()), (memory: MemoryCamera, index: number) => {
           this.MemoryTimelineItem(memory, index)
         })
       }
