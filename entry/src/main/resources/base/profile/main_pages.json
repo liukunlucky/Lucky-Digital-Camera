@@ -4,6 +4,7 @@
     "pages/CameraDetail",
     "pages/TestCameraData",
     "pages/SuggestionDetail",
-    "pages/MemoryPage"
+    "pages/MemoryPage",
+    "pages/FavoritePage"
   ]
 }

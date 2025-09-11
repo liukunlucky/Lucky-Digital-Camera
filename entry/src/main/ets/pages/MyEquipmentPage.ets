@@ -4,6 +4,7 @@ import { myEquipmentService } from '../service/MyEquipmentService';
 import { CameraDataItem, cameraDataJsonService } from '../service/CameraDataJsonService';
 import { Camera, CameraCategory, SensorFormat } from '../model/Camera';
 import promptAction from '@ohos.promptAction';
+import { favoriteService } from '../service/FavoriteService';
 
 @Component
 export struct MyEquipmentPage {
@@ -17,11 +18,22 @@ export struct MyEquipmentPage {
   @State cameraList: CameraDataItem[] = [];
   @State showCameraSelector: boolean = false;
   @State showDatePicker: boolean = false;
+  @State currentTabIndex: number = 0; // 0: 我的器材, 1: 我的收藏
+  @State favoritesList: CameraDataItem[] = []; // 收藏列表
+  @State isFavoriteLoading: boolean = false;
+  @StorageProp('refreshHomeFavorites') @Watch('onRefreshFavorites') refreshHomeFavorites: number = 0;
+  private tabsController: TabsController = new TabsController();
 
   aboutToAppear() {
     this.loadEquipmentData();
     this.loadCameraData();
+    this.loadFavorites();
     this.transactionDate = new Date().toISOString().split('T')[0];
+  }
+
+  // 监听收藏状态刷新
+  onRefreshFavorites() {
+    this.loadFavorites();
   }
 
   private loadEquipmentData() {
@@ -213,6 +225,94 @@ export struct MyEquipmentPage {
     }
   }
 
+  // 移除收藏
+  private async removeFavorite(camera: CameraDataItem) {
+    try {
+      await favoriteService.removeFavorite(camera);
+      this.favoritesList = await favoriteService.getFavorites();
+      
+      // 通知其他页面刷新收藏数据
+      AppStorage.setOrCreate('refreshHomeFavorites', Date.now());
+      
+      promptAction.showToast({
+        message: '已取消收藏',
+        duration: 2000
+      });
+    } catch (error) {
+      console.error('取消收藏失败:', error);
+      promptAction.showToast({
+        message: '取消收藏失败',
+        duration: 2000
+      });
+    }
+  }
+
+  // 加载收藏列表
+  private async loadFavorites() {
+    this.isFavoriteLoading = true;
+    try {
+      this.favoritesList = await favoriteService.getFavorites();
+    } catch (error) {
+      console.error('加载收藏列表失败:', error);
+    } finally {
+      this.isFavoriteLoading = false;
+    }
+  }
+
+  @Builder
+  TabBuilder(title: string, targetIndex: number) {
+    Column() {
+      Text(title)
+        .fontSize(this.currentTabIndex === targetIndex ? 17 : 15)
+        .fontWeight(this.currentTabIndex === targetIndex ? FontWeight.Bold : FontWeight.Normal)
+        .fontColor(this.currentTabIndex === targetIndex ? '#FF6B35' : '#666666')
+        .margin({ bottom: 6 })
+        .animation({
+          duration: 150,
+          curve: Curve.FastOutSlowIn
+        })
+      
+      // 底部指示线
+      Row()
+        .width(this.currentTabIndex === targetIndex ? 28 : 0)
+        .height(3)
+        .backgroundColor('#FF6B35')
+        .borderRadius(2)
+        .animation({
+          duration: 200,
+          curve: Curve.FastOutSlowIn
+        })
+    }
+    .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center)
+    .padding({ top: 12, bottom: 8, left: 4, right: 4 })
+    .backgroundColor(Color.Transparent)
+  }
+
+  // 添加收藏
+  private async addFavorite(camera: CameraDataItem) {
+    try {
+      await favoriteService.addFavorite(camera);
+      this.favoritesList = await favoriteService.getFavorites();
+      
+      // 通知其他页面刷新收藏数据
+      AppStorage.setOrCreate('refreshHomeFavorites', Date.now());
+      
+      promptAction.showToast({
+        message: '已添加到收藏',
+        duration: 2000
+      });
+    } catch (error) {
+      console.error('添加收藏失败:', error);
+      promptAction.showToast({
+        message: '添加收藏失败',
+        duration: 2000
+      });
+    }
+  }
+
   build() {
     Column() {
       // 顶部标题栏
@@ -226,7 +326,7 @@ export struct MyEquipmentPage {
         .width(36)
         .height(36)
         .visibility(Visibility.Hidden)
-        Text('我的器材')
+        Text(this.currentTabIndex === 0 ? '我的器材' : '我的收藏')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.primary_text_color'))
@@ -241,6 +341,7 @@ export struct MyEquipmentPage {
         .height(36)
         .borderRadius(18)
         .backgroundColor($r('app.color.brand_color'))
+        .visibility(this.currentTabIndex === 0 ? Visibility.Visible : Visibility.Hidden)
         .onClick(() => {
           this.showAddSheet = true;
         })
@@ -262,9 +363,48 @@ export struct MyEquipmentPage {
       })
       .bindContentCover($$this.showDatePicker, this.DatePickerSheet(), ModalTransition.NONE)
 
-      if (this.equipmentList.length > 0) {
+      // Tab导航栏
+      Tabs({ barPosition: BarPosition.Start, controller: this.tabsController }) {
+        TabContent() {
+          this.EquipmentContent()
+        }
+        .tabBar(this.TabBuilder('我的器材', 0))
+        
+        TabContent() {
+          this.FavoritesContent()
+        }
+        .tabBar(this.TabBuilder('我的收藏', 1))
+      }
+      .width('100%')
+      .layoutWeight(1)
+      .barMode(BarMode.Fixed)
+      .barWidth('70%')
+      .barHeight(52)
+      .barBackgroundColor($r('app.color.surface_color'))
+      .animationDuration(200)
+      .scrollable(true)
+      .onChange((index: number) => {
+        this.currentTabIndex = index;
+      })
+    }
+    .width('100%')
+    .height('100%')
+    .bindSheet($$this.showCameraSelector, this.CameraSelectorSheet(), {
+      height: '80%',
+      dragBar: true,
+      backgroundColor: $r('app.color.surface_color'),
+      onDisappear: () => {
+        this.showCameraSelector = false;
+      }
+    })
+  }
+
+  @Builder
+  EquipmentContent() {
+    if (this.equipmentList.length > 0) {
         // 器材列表
         Column() {
+          // 器材列表区域
           List() {
             ForEach(this.equipmentList, (item: MyEquipmentItem) => {
               ListItem() {
@@ -278,24 +418,26 @@ export struct MyEquipmentPage {
               })
             })
           }
+          .width('100%')
+          .layoutWeight(1)
+          .padding({ left: 16, right: 16, top: 16 })
 
-          // 生成回忆按钮
+          // 生成回忆按钮 - 固定在底部
           Button('生成回忆')
-            .width('100%')
+            .width('calc(100% - 32vp)')
             .height(48)
             .fontSize(16)
             .fontWeight(FontWeight.Medium)
             .backgroundColor($r('app.color.brand_color'))
             .fontColor('#FFFFFF')
             .borderRadius(12)
-            .margin({ top: 16 })
+            .margin({ left: 16, right: 16, top: 16, bottom: 16 })
             .onClick(() => {
               this.navigateToMemory();
             })
         }
         .width('100%')
         .layoutWeight(1)
-        .padding({ left: 16, right: 16, top: 16 })
         .backgroundColor($r('app.color.background_color'))
       } else {
         // 空状态
@@ -332,17 +474,90 @@ export struct MyEquipmentPage {
         .justifyContent(FlexAlign.Center)
         .backgroundColor($r('app.color.background_color'))
       }
-    }
-    .width('100%')
-    .height('100%')
-    .bindSheet($$this.showCameraSelector, this.CameraSelectorSheet(), {
-      height: '80%',
-      dragBar: true,
-      backgroundColor: $r('app.color.surface_color'),
-      onDisappear: () => {
-        this.showCameraSelector = false;
+  }
+
+  @Builder
+  FavoritesContent() {
+    if (this.isFavoriteLoading) {
+      // 加载状态
+      Column() {
+        LoadingProgress()
+          .width(40)
+          .height(40)
+          .color($r('app.color.brand_color'))
+          .margin({ bottom: 16 })
+        
+        Text('加载中...')
+          .fontSize(16)
+          .fontColor($r('app.color.secondary_text_color'))
       }
-    })
+      .width('100%')
+      .layoutWeight(1)
+      .justifyContent(FlexAlign.Center)
+      .backgroundColor($r('app.color.background_color'))
+    } else if (this.favoritesList.length === 0) {
+      // 空状态
+      Column() {
+        Image($r('app.media.icon_like'))
+          .width(80)
+          .height(80)
+          .fillColor($r('app.color.tertiary_text_color'))
+          .margin({ bottom: 16 })
+
+        Text('还没有收藏任何相机')
+          .fontSize(18)
+          .fontColor($r('app.color.secondary_text_color'))
+          .margin({ bottom: 8 })
+
+        Text('去首页发现更多精彩相机吧')
+          .fontSize(14)
+          .fontColor($r('app.color.tertiary_text_color'))
+          .margin({ bottom: 24 })
+
+        Button('去首页看看')
+          .width(120)
+          .height(40)
+          .fontSize(14)
+          .backgroundColor($r('app.color.brand_color'))
+          .fontColor('#FFFFFF')
+          .borderRadius(20)
+          .onClick(() => {
+            // 切换到首页tab (index: 0)
+            AppStorage.setOrCreate('switchToTab', 0);
+            router.back();
+          })
+      }
+      .width('100%')
+      .layoutWeight(1)
+      .justifyContent(FlexAlign.Center)
+      .backgroundColor($r('app.color.background_color'))
+    } else {
+      // 收藏列表
+      Scroll() {
+        Column() {
+          Text(`共收藏了 ${this.favoritesList.length} 台相机`)
+            .fontSize(14)
+            .fontColor($r('app.color.secondary_text_color'))
+            .margin({ bottom: 16 })
+            .alignSelf(ItemAlign.Start)
+
+          ForEach(this.favoritesList, (camera: CameraDataItem, index: number) => {
+            Column() {
+              this.FavoriteCameraCard(camera)
+            }
+            .margin({ bottom: 12 })
+          }, (camera: CameraDataItem) => camera.Brand + camera.Model)
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 16 })
+        .alignItems(HorizontalAlign.Start)
+        .justifyContent(FlexAlign.Start)
+      }
+      .width('100%')
+      .layoutWeight(1)
+      .backgroundColor($r('app.color.background_color'))
+      .align(Alignment.TopStart)
+    }
   }
 
   @Builder
@@ -424,6 +639,81 @@ export struct MyEquipmentPage {
     .backgroundColor($r('app.color.card_background_color'))
     .borderRadius(12)
     .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
+  }
+
+  @Builder
+  FavoriteCameraCard(camera: CameraDataItem) {
+    Row() {
+      // 相机图片
+      Image($rawfile(cameraDataJsonService.getCameraImagePath(camera)))
+        .width(80)
+        .height(60)
+        .objectFit(ImageFit.Cover)
+        .borderRadius(8)
+        .margin({ right: 12 })
+        .alt($r('app.media.foreground'))
+
+      // 相机信息
+      Column({ space: 4 }) {
+        Text(camera.Model)
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
+          .fontColor($r('app.color.primary_text_color'))
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+
+        Text(camera.Brand)
+          .fontSize(14)
+          .fontColor($r('app.color.secondary_text_color'))
+
+        Row({ space: 8 }) {
+          if (camera.Year) {
+            Text(camera.Year + '年')
+              .fontSize(12)
+              .fontColor($r('app.color.tertiary_text_color'))
+          }
+          if (camera.Megapixels) {
+            Text(camera.Megapixels)
+              .fontSize(12)
+              .fontColor($r('app.color.tertiary_text_color'))
+          }
+        }
+      }
+      .alignItems(HorizontalAlign.Start)
+      .layoutWeight(1)
+
+      // 操作按钮
+      Column({ space: 8 }) {
+        // 取消收藏按钮
+        Button() {
+          Image($r('app.media.icon_like'))
+            .width(20)
+            .height(20)
+            .fillColor('#FF6B6B')
+        }
+        .width(36)
+        .height(36)
+        .backgroundColor('#FFE5E5')
+        .borderRadius(18)
+        .onClick(() => {
+          this.removeFavorite(camera);
+        })
+      }
+      .alignItems(HorizontalAlign.Center)
+    }
+    .width('100%')
+    .padding(16)
+    .backgroundColor($r('app.color.card_background_color'))
+    .borderRadius(12)
+    .shadow({
+      radius: 4,
+      color: $r('app.color.shadow_color'),
+      offsetX: 0,
+      offsetY: 2
+    })
+    .onClick(() => {
+      this.navigateToCameraDetail(camera);
+    })
   }
 
   @Builder

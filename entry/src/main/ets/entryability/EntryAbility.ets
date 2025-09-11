@@ -1,4 +1,4 @@
-import { AbilityConstant, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
+import { AbilityConstant, Configuration, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { WindowAbility } from './WindowAbility';
@@ -27,6 +27,15 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
+      
+      // 设置全屏布局和状态栏适配
+      const windowClass = windowStage.getMainWindowSync();
+      const avoidAreaTop = windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
+      const avoidAreaBottom = windowClass.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR);
+      const topRectHeight = avoidAreaTop.topRect.height;
+      const bottomRectHeight = avoidAreaBottom.bottomRect.height;
+      AppStorage.setOrCreate('topRectHeight', windowClass.getUIContext().px2vp(topRectHeight));
+      AppStorage.setOrCreate('bottomRectHeight', windowClass.getUIContext().px2vp(bottomRectHeight));
     });
   }
 
@@ -43,5 +52,12 @@ export default class EntryAbility extends UIAbility {
   onBackground(): void {
     // Ability has back to background
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onBackground');
+  }
+
+  onConfigurationUpdate(newConfig: Configuration): void {
+    const currentColorMode: ConfigurationConstant.ColorMode | undefined = AppStorage.get('currentColorMode');
+    if (currentColorMode !== newConfig.colorMode) {
+      AppStorage.setOrCreate<ConfigurationConstant.ColorMode>('currentColorMode', newConfig.colorMode);
+    }
   }
 }

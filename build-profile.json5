@@ -19,11 +19,11 @@
         "type": "HarmonyOS",
         "material": {
           "storeFile": "/Users/monkey/Documents/Harmony/发布相关/数码回忆/digital_camera.p12",
-          "storePassword": "0000001E9E8F13CEDF637763775AF1503ABC2392B2D64DA440286AAB657AC7DA7FA717DC8283378BC32722D941F6",
+          "storePassword": "0000001E4ECA364C36C972BAAF11234D1743EC759A069C1E182E5122827A6A24EFEE9AE1276176491230A6DD2836",
           "keyAlias": "digital_camera",
-          "keyPassword": "0000001EBC74AF094ACF01C23591DDBF750990E97620516745A4292413D1B7DC6C8651F2CA2357681C42F521B47B",
+          "keyPassword": "0000001E5A8338EC925A0C32D7ECD49FBD71FB23E98EBA885D78110147D9405C4A6A68764817E057BF6507C93669",
           "signAlg": "SHA256withECDSA",
-          "profile": "/Users/monkey/Documents/Harmony/发布相关/数码回忆/digital_camera_profileRelease.p7b",
+          "profile": "/Users/monkey/Documents/Harmony/发布相关/数码回忆/digital_camera_profileRelease (1).p7b",
           "certpath": "/Users/monkey/Documents/Harmony/发布相关/数码回忆/digital_camera_release.cer"
         }
       }

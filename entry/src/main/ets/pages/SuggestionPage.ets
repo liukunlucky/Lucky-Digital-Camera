@@ -2,6 +2,8 @@ import router from '@ohos.router';
 
 @Component
 export struct SuggestionPage {
+  private tabsController: TabsController = new TabsController();
+  @State currentSection: string = 'suggestion'; // 'suggestion'、'encyclopedia' 或 'tutorial'
   @State suggestions: SuggestionItem[] = [
     {
       id: 1,
@@ -210,11 +212,53 @@ export struct SuggestionPage {
     this.filteredSuggestions = filtered;
   }
 
+  @Builder
+  TabBuilder(title: string, targetIndex: number) {
+    Column() {
+      Text(title)
+        .fontSize(this.getCurrentTabIndex() === targetIndex ? 17 : 15)
+        .fontWeight(this.getCurrentTabIndex() === targetIndex ? FontWeight.Bold : FontWeight.Normal)
+        .fontColor(this.getCurrentTabIndex() === targetIndex ? '#FF6B35' : '#666666')
+        .margin({ bottom: 6 })
+        .animation({
+           duration: 150,
+           curve: Curve.FastOutSlowIn
+         })
+      
+      // 底部指示线
+      Row()
+        .width(this.getCurrentTabIndex() === targetIndex ? 28 : 0)
+        .height(3)
+        .backgroundColor('#FF6B35')
+        .borderRadius(2)
+        .animation({
+           duration: 100,
+           curve: Curve.FastOutSlowIn
+         })
+    }
+    .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center)
+    .padding({ top: 12, bottom: 8, left: 4, right: 4 })
+    .backgroundColor(Color.Transparent)
+  }
+
+  getCurrentTabIndex(): number {
+    if (this.currentSection === 'suggestion') {
+      return 0;
+    } else if (this.currentSection === 'encyclopedia') {
+      return 1;
+    } else {
+      return 2;
+    }
+  }
+
   build() {
     Column() {
       // 顶部标题栏
       Row() {
-        Text('购买建议')
+        Text('知识库')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.primary_text_color'))
@@ -224,6 +268,49 @@ export struct SuggestionPage {
       .justifyContent(FlexAlign.Center)
       .backgroundColor($r('app.color.surface_color'))
       .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
+
+      // Tab导航栏
+      Tabs({ barPosition: BarPosition.Start, controller: this.tabsController }) {
+        TabContent() {
+          this.SuggestionContent()
+        }
+        .tabBar(this.TabBuilder('购买建议', 0))
+        
+        TabContent() {
+          this.EncyclopediaContent()
+        }
+        .tabBar(this.TabBuilder('相机百科', 1))
+        
+        TabContent() {
+          this.TutorialContent()
+        }
+        .tabBar(this.TabBuilder('教程', 2))
+      }
+      .width('100%')
+      .layoutWeight(1)
+      .barMode(BarMode.Fixed)
+      .barWidth('70%') // tab不占满全宽，稍微增加宽度
+      .barHeight(52)
+      .barBackgroundColor($r('app.color.surface_color'))
+      .animationDuration(100)
+      .scrollable(true) // 启用滑动切换
+      .onChange((index: number) => {
+        if (index === 0) {
+          this.currentSection = 'suggestion';
+        } else if (index === 1) {
+          this.currentSection = 'encyclopedia';
+        } else {
+          this.currentSection = 'tutorial';
+        }
+      })
+    }
+    .width('100%')
+    .height('100%')
+  }
+
+  @Builder
+  SuggestionContent() {
+    Column() {
 
       // 搜索框
       Row() {
@@ -239,7 +326,7 @@ export struct SuggestionPage {
           })
       }
       .width('100%')
-      .padding({ left: 16, right: 16, top: 12, bottom: 8 })
+      .padding({ left: 16, right: 16, top: 8, bottom: 8 })
       .backgroundColor($r('app.color.background_color'))
 
       // 分类筛选
@@ -337,16 +424,114 @@ export struct SuggestionPage {
       .backgroundColor($r('app.color.background_color'))
     }
     .width('100%')
-    .height('100%')
+    .layoutWeight(1)
   }
 
   @Builder
-  SuggestionCard(item: SuggestionItem) {
+  EncyclopediaContent() {
+    Scroll() {
+      Column() {
+        this.EncyclopediaCard('相机基础知识', '了解相机的基本构造和工作原理', [
+          '相机的基本组成部分包括机身、镜头、取景器、快门、光圈等。',
+          '数码相机通过传感器将光信号转换为数字信号，记录图像信息。',
+          '相机的核心参数包括像素、感光度(ISO)、光圈、快门速度等。'
+        ])
+        
+        this.EncyclopediaCard('摄影术语解释', '常用摄影术语的详细解释', [
+          '光圈：控制进光量的装置，用f值表示，数值越小光圈越大。',
+          '快门：控制曝光时间的装置，速度越快越能凝固运动。',
+          'ISO：感光度，数值越高越敏感，但噪点也会增加。',
+          '景深：画面中清晰的范围，受光圈、焦距、距离影响。'
+        ])
+        
+        this.EncyclopediaCard('相机发展历史', '从胶片到数码的相机发展历程', [
+          '1839年：达盖尔发明银版摄影法，摄影术正式诞生。',
+          '1888年：柯达推出第一台便携式相机，普及摄影。',
+          '1975年：柯达工程师发明第一台数码相机。',
+          '1990年代：数码相机开始商业化，逐步取代胶片。'
+        ])
+        
+        this.EncyclopediaCard('镜头光学原理', '了解镜头的光学构造和成像原理', [
+          '镜头由多片光学玻璃组成，通过折射聚焦光线。',
+          '焦距决定视角范围，焦距越长视角越窄。',
+          '光圈控制景深效果，大光圈景深浅，小光圈景深深。',
+          '镜头设计需要平衡各种光学像差，追求最佳成像质量。'
+        ])
+        
+        this.EncyclopediaCard('传感器技术', '数码相机传感器的工作原理和类型', [
+          'CCD传感器：成像质量高，但功耗大，成本高。',
+          'CMOS传感器：功耗低，成本低，是目前主流技术。',
+          '全画幅传感器：尺寸35mm，画质最佳，价格较高。',
+          'APS-C传感器：尺寸适中，性价比高，是入门首选。'
+        ])
+        
+        this.EncyclopediaCard('色彩科学', '数码摄影中的色彩管理和处理', [
+          'RGB色彩模式：通过红绿蓝三原色混合产生各种颜色。',
+          '色彩空间：定义颜色范围，常见的有sRGB、Adobe RGB。',
+          '白平衡：调整色温，使白色物体在不同光源下显示正确。',
+          'RAW格式：保存原始数据，后期处理空间更大。'
+        ])
+      }
+      .padding(16)
+    }
+    .width('100%')
+    .layoutWeight(1)
+    .backgroundColor($r('app.color.background_color'))
+  }
+
+  @Builder
+  EncyclopediaCard(title: string, subtitle: string, content: string[]) {
+    Column() {
+      Text(title)
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.primary_text_color'))
+        .width('100%')
+        .margin({ bottom: 8 })
+      
+      Text(subtitle)
+        .fontSize(14)
+        .fontColor($r('app.color.secondary_text_color'))
+        .width('100%')
+        .margin({ bottom: 16 })
+      
+      Column() {
+        ForEach(content, (item: string, index: number) => {
+          Row() {
+            Text(`${index + 1}.`)
+              .fontSize(14)
+              .fontColor($r('app.color.brand_color'))
+              .width(20)
+              .margin({ right: 8 })
+            
+            Text(item)
+              .fontSize(14)
+              .fontColor($r('app.color.primary_text_color'))
+              .layoutWeight(1)
+              .lineHeight(20)
+          }
+          .width('100%')
+          .alignItems(VerticalAlign.Top)
+          .margin({ bottom: 8 })
+        })
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .padding(16)
+    .backgroundColor($r('app.color.card_background_color'))
+    .borderRadius(12)
+    .margin({ bottom: 16 })
+    .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
+  }
+
+  @Builder
+  SuggestionCard(suggestion: SuggestionItem) {
     Column() {
       // 顶部标签行
       Row() {
         // 分类标签
-         Text(item.category)
+         Text(suggestion.category)
            .fontSize(10)
            .fontColor($r('app.color.tag_text_primary'))
            .backgroundColor($r('app.color.tag_background_primary'))
@@ -354,7 +539,7 @@ export struct SuggestionPage {
            .padding({ left: 7, right: 7, top: 4, bottom: 4 })
         
         // 热门标签
-        if (item.isHot) {
+        if (suggestion.isHot) {
           Row() {
              Image($r('app.media.icon_hot'))
                .width(10)
@@ -374,7 +559,7 @@ export struct SuggestionPage {
         
         Blank()
         
-        Text(item.publishTime)
+        Text(suggestion.publishTime)
           .fontSize(10)
           .fontColor($r('app.color.tertiary_text_color'))
       }
@@ -382,7 +567,7 @@ export struct SuggestionPage {
       .margin({ bottom: 8 })
 
       // 标题
-      Text(item.title)
+      Text(suggestion.title)
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .fontColor($r('app.color.primary_text_color'))
@@ -392,7 +577,7 @@ export struct SuggestionPage {
         .margin({ bottom: 8 })
 
       // 摘要
-      Text(item.summary)
+      Text(suggestion.summary)
         .fontSize(14)
         .fontColor($r('app.color.secondary_text_color'))
         .maxLines(2)
@@ -401,9 +586,9 @@ export struct SuggestionPage {
         .margin({ bottom: 12 })
 
       // 标签
-      if (item.tags && item.tags.length > 0) {
+      if (suggestion.tags && suggestion.tags.length > 0) {
         Flex({ wrap: FlexWrap.Wrap, alignContent: FlexAlign.Start }) {
-          ForEach(item.tags.slice(0, 3), (tag: string) => {
+          ForEach(suggestion.tags.slice(0, 3), (tag: string) => {
              Text(`#${tag}`)
                .fontSize(11)
                .fontColor($r('app.color.tag_text_accent'))
@@ -426,7 +611,7 @@ export struct SuggestionPage {
             .fillColor($r('app.color.tertiary_text_color'))
             .margin({ right: 4 })
           
-          Text(`${item.readCount}`)
+          Text(`${suggestion.readCount}`)
             .fontSize(12)
             .fontColor($r('app.color.tertiary_text_color'))
         }
@@ -453,6 +638,175 @@ export struct SuggestionPage {
     .borderRadius(12)
     .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
   }
+
+  @Builder
+  TutorialContent() {
+    TutorialContentComponent()
+  }
+}
+
+@Component
+struct TutorialContentComponent {
+  @State isPlaying: boolean = false
+  @State currentTime: number = 0
+  @State totalTime: number = 0
+  private videoController: VideoController = new VideoController();
+  
+  // 教程视频数据
+  @State tutorials: TutorialItem[] = [
+    {
+      id: 1,
+      title: '摄影基础教程',
+      description: '本视频将为您介绍摄影的基础知识，包括相机的基本操作、构图技巧、光线运用等内容，适合摄影初学者观看学习。',
+      videoSrc: 'video/video1.mp4',
+      thumbnail: 'video/video1_cover.png'
+    }
+  ];
+  
+  // 格式化时间显示
+  formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  build() {
+    Column() {
+      // 教程列表
+      List() {
+        ForEach(this.tutorials, (tutorial: TutorialItem) => {
+          ListItem() {
+            Column() {
+              // 视频标题
+              Row() {
+                Text(tutorial.title)
+                  .fontSize(18)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor($r('app.color.primary_text_color'))
+                  .layoutWeight(1)
+              }
+              .width('100%')
+              .margin({ bottom: 12 })
+              
+              // 视频播放器容器
+              Stack({ alignContent: Alignment.Center }) {
+                Video({
+                  src: $rawfile(tutorial.videoSrc),
+                  previewUri: $rawfile(tutorial.thumbnail),
+                  controller: this.videoController
+                })
+                  .width('100%')
+                  .height(200)
+                  .autoPlay(false)
+                  .controls(false)
+                  .borderRadius(8)
+                  .backgroundColor($r('app.color.card_background_color'))
+                  .onStart(() => {
+                    this.isPlaying = true;
+                  })
+                  .onPause(() => {
+                    this.isPlaying = false;
+                  })
+                  .onFinish(() => {
+                    this.isPlaying = false;
+                    this.currentTime = 0;
+                  })
+                  .onUpdate((event) => {
+                    if (event) {
+                      this.currentTime = event.time
+                    }
+                  })
+                  .onPrepared((event) => {
+                    if (event) {
+                      this.totalTime = event.duration
+                    }
+                  })
+                
+                // 自定义播放控制按钮
+                if (!this.isPlaying) {
+                  Button() {
+                    Image($r('app.media.ic_play'))
+                      .width(24)
+                      .height(24)
+                      .fillColor(Color.White)
+                  }
+                  .width(60)
+                  .height(60)
+                  .backgroundColor('rgba(0, 0, 0, 0.6)')
+                  .borderRadius(30)
+                  .onClick(() => {
+                    this.videoController.start();
+                  })
+                }
+              }
+              .width('100%')
+              .onClick(() => {
+                if (this.isPlaying) {
+                  this.videoController.pause();
+                } else {
+                  this.videoController.start();
+                }
+              })
+              
+              // 播放进度条
+              if (this.totalTime > 0) {
+                Column() {
+                  Row() {
+                    Text(this.formatTime(this.currentTime))
+                      .fontSize(12)
+                      .fontColor($r('app.color.secondary_text_color'))
+                    
+                    Slider({
+                      value: this.currentTime,
+                      min: 0,
+                      max: this.totalTime,
+                      step: 1
+                    })
+                      .layoutWeight(1)
+                      .margin({ left: 8, right: 8 })
+                      .trackColor($r('app.color.background_color'))
+                      .selectedColor($r('app.color.brand_color'))
+                      .blockColor($r('app.color.brand_color'))
+                      .onChange((value: number) => {
+                        this.videoController.setCurrentTime(value);
+                      })
+                    
+                    Text(this.formatTime(this.totalTime))
+                      .fontSize(12)
+                      .fontColor($r('app.color.secondary_text_color'))
+                  }
+                  .width('100%')
+                  .alignItems(VerticalAlign.Center)
+                }
+                .width('100%')
+                .margin({ top: 8 })
+              }
+              
+              // 视频描述
+              Text(tutorial.description)
+                .fontSize(14)
+                .fontColor($r('app.color.secondary_text_color'))
+                .width('100%')
+                .margin({ top: 12 })
+                .lineHeight(20)
+            }
+            .width('100%')
+            .padding(16)
+            .backgroundColor($r('app.color.card_background_color'))
+            .borderRadius(12)
+            .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
+          }
+          .margin({ bottom: 16 })
+        })
+      }
+      .width('100%')
+      .layoutWeight(1)
+      .padding({ left: 16, right: 16, top: 16 })
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor($r('app.color.background_color'))
+  }
 }
 
 interface SuggestionItem {
@@ -465,4 +819,12 @@ interface SuggestionItem {
   category: string;
   tags: string[];
   isHot: boolean;
+}
+
+interface TutorialItem {
+  id: number;
+  title: string;
+  description: string;
+  videoSrc: string;
+  thumbnail: string;
 }
