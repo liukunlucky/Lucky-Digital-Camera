@@ -7,6 +7,7 @@ import { ScreenshotUtil } from '../utils/ScreenshotUtil';
 import { MyEquipmentItem } from '../model/MyEquipmentModel';
 import { myEquipmentService } from '../service/MyEquipmentService';
 import { Camera, CameraCategory, SensorFormat } from '../model/Camera';
+import { EquipmentDashboard } from '../components/EquipmentDashboard';
 
 @Entry
 @Component
@@ -14,6 +15,7 @@ export struct MemoryPage {
   @State memoryCameras: MemoryCamera[] = [];
   @State isShowingShareSheet: boolean = false;
   @State myEquipmentList: MyEquipmentItem[] = [];
+  @State currentView: number = 0; // 0: 回忆时间线, 1: 统计仪表盘
 
   async aboutToAppear() {
     // 异步初始化，避免阻塞主线程
@@ -268,156 +270,165 @@ export struct MemoryPage {
     Column() {
       // 顶部标题栏
       Row() {
-
-        Text('相机回忆')
+        Text('我的器材')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
-          .fontColor($r('app.color.primary_text_color')).align(Alignment.Center)
+          .fontColor($r('app.color.primary_text_color'))
       }
       .width('100%')
       .padding({ left: 16, right: 16, top: 16, bottom: 12 })
       .backgroundColor($r('app.color.surface_color'))
       .justifyContent(FlexAlign.Center)
 
-      if (this.memoryCameras.length === 0) {
-        // 空状态 - 提示用户去我的器材页面添加器材
-        Column() {
-          Image($r('app.media.icon_memory'))
-            .width(80)
-            .height(80)
-            .fillColor('#BDC3C7')
-            .margin({ bottom: 20 })
-          
-          Text('您还没有器材回忆')
-            .fontSize(20)
-            .fontWeight(FontWeight.Medium)
-            .fontColor($r('app.color.primary_text_color'))
-            .margin({ bottom: 10 })
-          
-          Text('请先在"我的器材"页面添加您的相机')
-            .fontSize(16)
-            .fontColor($r('app.color.secondary_text_color'))
-            .margin({ bottom: 30 })
-          
-          // 跳转到我的器材页面按钮
-          Button('去添加器材')
-            .fontSize(16)
-            .fontColor('#FFFFFF')
-            .backgroundColor($r('app.color.brand_color'))
-            .borderRadius(12)
-            .padding({ left: 32, right: 32, top: 12, bottom: 12 })
-            .margin({ bottom: 20 })
-            .shadow({ 
-              radius: 8, 
-              color: $r('app.color.brand_color_light'), 
-              offsetX: 0, 
-              offsetY: 4 
-            })
-            .onClick(() => {
-              router.pushUrl({ url: 'pages/Index' });
-            })
-          
-          Text('添加器材后，这里将自动生成您的相机回忆')
-            .fontSize(14)
-            .fontColor($r('app.color.secondary_text_color'))
-            .margin({ top: 10 })
-        }
-        .width('100%')
-        .layoutWeight(1)
-        .justifyContent(FlexAlign.Center)
-        .backgroundColor($r('app.color.background_color'))
+      // Tab切换栏
+      Row() {
+        Button('相机回忆')
+          .fontSize(16)
+          .fontColor(this.currentView === 0 ? '#FFFFFF' : $r('app.color.secondary_text_color'))
+          .backgroundColor(this.currentView === 0 ? $r('app.color.brand_color') : 'transparent')
+          .borderRadius(20)
+          .padding({ left: 20, right: 20, top: 8, bottom: 8 })
+          .onClick(() => {
+            this.currentView = 0;
+          })
+
+        Button('统计仪表盘')
+          .fontSize(16)
+          .fontColor(this.currentView === 1 ? '#FFFFFF' : $r('app.color.secondary_text_color'))
+          .backgroundColor(this.currentView === 1 ? $r('app.color.brand_color') : 'transparent')
+          .borderRadius(20)
+          .padding({ left: 20, right: 20, top: 8, bottom: 8 })
+          .margin({ left: 12 })
+          .onClick(() => {
+            this.currentView = 1;
+          })
+      }
+      .width('100%')
+      .padding({ left: 16, right: 16, bottom: 16 })
+      .backgroundColor($r('app.color.surface_color'))
+      .justifyContent(FlexAlign.Start)
+
+      // 主要内容区域
+      if (this.currentView === 0) {
+        // 相机回忆视图
+        this.MemoryTimelineView()
       } else {
-        // 回忆时间线
-        Column() {
-          // 标题栏
-          Row() {
-            Column() {
-              Text(`我的相机回忆路线`)
-                .fontSize(18)
-                .fontWeight(FontWeight.Medium)
-                .fontColor($r('app.color.primary_text_color'))
-              
-              Text(`${this.memoryCameras.length} 台相机`)
-                .fontSize(14)
-                .fontColor($r('app.color.secondary_text_color'))
-                .margin({ top: 2 })
-            }
-            .alignItems(HorizontalAlign.Start)
-            
-            Blank()
-            
-            // 操作按钮组
-            Row({ space: 8 }) {
-              // 分享按钮
-              Column({ space: 4 }) {
-                Button({ type: ButtonType.Circle }) {
-                  Image($r('app.media.icon_share'))
-                    .width(20)
-                    .height(20)
-                    .fillColor('#FFFFFF')
-                }
-                .width(40)
-                .height(40)
-                .backgroundColor($r('app.color.brand_color'))
-                .onClick(() => {
-                  this.shareMemory();
-                })
-                
-                Text('分享')
-                  .fontSize(12)
-                  .fontColor($r('app.color.secondary_text_color'))
-                  .textAlign(TextAlign.Center)
-              }
-              .alignItems(HorizontalAlign.Center)
-            }
-          }
-          .width('100%')
-          .padding({ left: 16, right: 16, top: 12, bottom: 12 })
-          .backgroundColor($r('app.color.surface_color'))
-
-
-
-          // 时间线列表 - 使用Scroll包装以支持完整截图
-          Scroll() {
-            Column({ space: 8 }) {
-              ForEach([...this.memoryCameras].sort((a, b) => new Date(a.addedDate).getTime() - new Date(b.addedDate).getTime()), (memory: MemoryCamera, index: number) => {
-                this.MemoryTimelineItem(memory, index)
-              })
-            }
-            .width('100%')
-            .padding({ left: 16, right: 16 })
-          }
-          .id('scrollContainer')
-          .width('100%')
+        // 统计仪表盘视图
+        EquipmentDashboard()
           .layoutWeight(1)
-          .backgroundColor($r('app.color.background_color'))
-          .scrollBar(BarState.Auto)
-        }
-        .width('100%')
-        .layoutWeight(1)
-        .bindSheet(this.isShowingShareSheet, this.ShareSheet(), {
-          height: 200,
-          showClose: false,
-          onWillDismiss: ((dismissSheetAction: DismissSheetAction) => {
-            this.isShowingShareSheet = false;
-            dismissSheetAction.dismiss();
-          }),
-        })
       }
     }
     .id('memoryPageContainer')
     .width('100%')
     .height('100%')
     .backgroundColor($r('app.color.background_color'))
+    .bindSheet(this.isShowingShareSheet, this.ShareSheet(), {
+      height: 200,
+      showClose: false,
+      onWillDismiss: ((dismissSheetAction: DismissSheetAction) => {
+        this.isShowingShareSheet = false;
+        dismissSheetAction.dismiss();
+      }),
+    })
   }
 
 
 
 
 
-   // 回忆时间线项目 - 自定义路线图
-   @Builder
-   MemoryTimelineItem(memory: MemoryCamera, index: number) {
+  // 回忆时间线视图
+  @Builder
+  MemoryTimelineView() {
+    Column() {
+      // 空状态提示
+      if (this.memoryCameras.length === 0) {
+        Column({ space: 20 }) {
+           Image($r('app.media.icon_memory'))
+             .width(80)
+             .height(80)
+             .fillColor($r('app.color.secondary_text_color'))
+             .opacity(0.5)
+          
+          Text('还没有相机回忆')
+            .fontSize(16)
+            .fontColor($r('app.color.secondary_text_color'))
+          
+          Text('添加器材后会自动生成回忆时间线')
+            .fontSize(14)
+            .fontColor($r('app.color.tertiary_text_color'))
+            .textAlign(TextAlign.Center)
+        }
+        .width('100%')
+        .height(300)
+        .justifyContent(FlexAlign.Center)
+        .alignItems(HorizontalAlign.Center)
+      } else {
+        // 操作按钮栏
+        Row({ space: 16 }) {
+          // 删除路线按钮
+          Button('清空回忆')
+            .fontSize(14)
+            .fontColor('#E74C3C')
+            .backgroundColor('transparent')
+            .border({ width: 1, color: '#E74C3C' })
+            .borderRadius(8)
+            .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+            .onClick(() => {
+              this.showDeleteRouteConfirmDialog();
+            })
+          
+          Blank()
+          
+          // 分享按钮
+          Column({ space: 4 }) {
+            Button({ type: ButtonType.Circle }) {
+              Image($r('app.media.icon_share'))
+                .width(20)
+                .height(20)
+                .fillColor('#FFFFFF')
+            }
+            .width(40)
+            .height(40)
+            .backgroundColor($r('app.color.brand_color'))
+            .onClick(() => {
+              this.shareMemory();
+            })
+            
+            Text('分享')
+              .fontSize(12)
+              .fontColor($r('app.color.secondary_text_color'))
+              .textAlign(TextAlign.Center)
+          }
+          .alignItems(HorizontalAlign.Center)
+        }
+        .width('100%')
+        .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+        .backgroundColor($r('app.color.surface_color'))
+        
+        // 时间线列表 - 使用Scroll包装以支持完整截图
+        Scroll() {
+          Column({ space: 8 }) {
+            ForEach([...this.memoryCameras].sort((a, b) => new Date(a.addedDate).getTime() - new Date(b.addedDate).getTime()), (memory: MemoryCamera, index: number) => {
+              this.MemoryTimelineItem(memory, index)
+            })
+          }
+          .width('100%')
+          .padding({ left: 16, right: 16 })
+        }
+        .id('scrollContainer')
+        .width('100%')
+        .layoutWeight(1)
+        .backgroundColor($r('app.color.background_color'))
+        .scrollBar(BarState.Auto)
+      }
+    }
+    .width('100%')
+    .layoutWeight(1)
+  }
+
+  // 回忆时间线项目 - 自定义路线图
+  @Builder
+  MemoryTimelineItem(memory: MemoryCamera, index: number) {
     Column() {
       // 路线节点和连接线
       Row() {

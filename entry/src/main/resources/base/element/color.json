@@ -78,7 +78,15 @@
     },
     {
       "name": "input_background_color",
-      "value": "#F8F9FA"
+      "value": "#FFFFFF"
+    },
+    {
+      "name": "success_color",
+      "value": "#27AE60"
+    },
+    {
+      "name": "highlight_background",
+      "value": "#FFF9E6"
     }
   ]
 }

@@ -1,5 +1,4 @@
 import { Camera, CameraCategory, SensorFormat } from '../model/Camera';
-import { cameraDataService } from '../service/CameraDataService';
 import { Brand } from '../model/Brand';
 import { brandDataService } from '../service/BrandDataService';
 import { CameraDataItem, cameraDataJsonService } from '../service/CameraDataJsonService';
@@ -7,9 +6,9 @@ import router from '@ohos.router';
 import { favoriteService } from '../service/FavoriteService';
 import { promptAction } from '@kit.ArkUI';
 
-
+@Entry
 @Component
-export struct HomePage {
+struct HomePage {
   @State cameras: Camera[] = [];
   @State searchText: string = '';
   @State filteredCameras: Camera[] = [];
@@ -22,6 +21,9 @@ export struct HomePage {
   @State filteredCameraDataItems: CameraDataItem[] = [];
   @State dataJsonBrands: string[] = [];
   @StorageProp('refreshHomeFavorites') @Watch('onRefreshFavorites') refreshHomeFavorites: number = 0;
+  // 反馈弹窗相关状态
+  @State showFeedbackDialog: boolean = false;
+  @State feedbackText: string = '';
 
 
   async aboutToAppear() {
@@ -182,14 +184,29 @@ export struct HomePage {
     Column() {
       // 顶部标题栏
       Row() {
+        Button() {
+          Image($r('app.media.icon_back'))
+            .width(24)
+            .height(24)
+            .fillColor($r('app.color.primary_text_color'))
+        }
+        .width(40)
+        .height(40)
+        .backgroundColor('transparent')
+        .onClick(() => {
+          router.back();
+        })
         Text('数码库')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.primary_text_color'))
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center)
+        Blank().width(40)
       }
       .width('100%')
       .height(56)
-      .justifyContent(FlexAlign.Center)
+      .padding({ left: 16, right: 16 })
       .backgroundColor($r('app.color.surface_color'))
       .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
 
@@ -253,6 +270,146 @@ export struct HomePage {
       .layoutWeight(1)
       .padding({ left: 16, right: 16 })
       .backgroundColor($r('app.color.background_color'))
+
+      // 底部反馈提醒
+      Row() {
+        Text('数据有误或缺失？')
+          .fontSize(12)
+          .fontColor($r('app.color.secondary_text_color'))
+        
+        Text('点击反馈')
+          .fontSize(12)
+          .fontColor($r('app.color.brand_color'))
+          .margin({ left: 4 })
+          .onClick(() => {
+            this.showFeedbackDialog = true;
+          })
+      }
+      .width('100%')
+      .justifyContent(FlexAlign.Center)
+      .padding({ top: 16, bottom: 16 })
+      .backgroundColor($r('app.color.background_color'))
+    }
+    .width('100%')
+    .height('100%')
+    .bindContentCover(this.showFeedbackDialog, this.FeedbackDialog(), {
+      modalTransition: ModalTransition.NONE,
+      backgroundColor: Color.Transparent,
+      onAppear: () => {
+        console.info('反馈弹窗显示');
+      },
+      onDisappear: () => {
+        console.info('反馈弹窗隐藏');
+        this.feedbackText = '';
+      }
+    })
+  }
+
+  @Builder
+  FeedbackDialog() {
+    Column() {
+      // 弹窗背景遮罩
+      Column() {
+        // 弹窗内容
+        Column() {
+          // 标题
+          Text('请输入相关器材信息')
+            .fontSize(18)
+            .fontWeight(FontWeight.Medium)
+            .fontColor($r('app.color.primary_text_color'))
+            .margin({ bottom: 8 })
+          
+          // 副标题
+          Text('如 Nikon D780')
+            .fontSize(14)
+            .fontColor($r('app.color.secondary_text_color'))
+            .margin({ bottom: 20 })
+          
+          // 输入框
+          TextInput({ placeholder: '请输入器材型号...', text: this.feedbackText })
+            .width('100%')
+            .height(48)
+            .borderRadius(8)
+            .backgroundColor($r('app.color.surface_color'))
+            .fontColor($r('app.color.primary_text_color'))
+            .placeholderColor($r('app.color.secondary_text_color'))
+            .padding({ left: 16, right: 16 })
+            .border({
+              width: 1,
+              color: $r('app.color.divider_color')
+            })
+            .margin({ bottom: 24 })
+            .onChange((value: string) => {
+              this.feedbackText = value;
+            })
+          
+          // 按钮区域
+          Row() {
+            // 取消按钮
+            Button('取消')
+              .width('48%')
+              .height(44)
+              .fontSize(16)
+              .fontColor($r('app.color.secondary_text_color'))
+              .backgroundColor($r('app.color.surface_color'))
+              .border({
+                width: 1,
+                color: $r('app.color.divider_color')
+              })
+              .borderRadius(8)
+              .onClick(() => {
+                this.showFeedbackDialog = false;
+              })
+            
+            Blank()
+            
+            // 提交按钮
+            Button('提交')
+              .width('48%')
+              .height(44)
+              .fontSize(16)
+              .fontColor('#FFFFFF')
+              .backgroundColor($r('app.color.brand_color'))
+              .borderRadius(8)
+              .onClick(() => {
+                if (this.feedbackText.trim()) {
+                  // 处理提交逻辑
+                  promptAction.showToast({
+                    message: '感谢您的反馈！我们会尽快处理',
+                    duration: 2000
+                  });
+                  this.showFeedbackDialog = false;
+                } else {
+                  promptAction.showToast({
+                    message: '请输入器材信息',
+                    duration: 1500
+                  });
+                }
+              })
+          }
+          .width('100%')
+          .justifyContent(FlexAlign.SpaceBetween)
+        }
+        .width('85%')
+        .padding(24)
+        .backgroundColor($r('app.color.card_background_color'))
+        .borderRadius(16)
+        .shadow({
+          radius: 20,
+          color: $r('app.color.shadow_color'),
+          offsetX: 0,
+          offsetY: 8
+        })
+      }
+      .width('100%')
+      .height('100%')
+      .justifyContent(FlexAlign.Center)
+      .alignItems(HorizontalAlign.Center)
+      .backgroundColor('rgba(0, 0, 0, 0.5)')
+      .onClick(() => {
+        // 点击遮罩关闭弹窗
+        this.showFeedbackDialog = false;
+      })
     }
     .width('100%')
     .height('100%')

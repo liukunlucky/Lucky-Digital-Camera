@@ -3,8 +3,8 @@ import { MyEquipmentItem } from '../model/MyEquipmentModel';
 import { myEquipmentService } from '../service/MyEquipmentService';
 import { promptAction } from '@kit.ArkUI';
 import { CameraDataItem, cameraDataJsonService } from '../service/CameraDataJsonService';
+import { EnhancedCompareView } from '../components/EnhancedCompareView';
 
-@Entry
 @Component
 export struct ComparePage {
   @State equipmentList: MyEquipmentItem[] = [];
@@ -19,6 +19,7 @@ export struct ComparePage {
   @StorageLink('cameraToAdd') cameraToAdd: CameraDataItem | null = null;
   @State isAllCamerasLoaded: boolean = false; // 标记全部相机是否已加载
   @State showOnlyDifferent: boolean = false; // 仅展示不同选项的开关
+  @StorageProp('refreshMyEquipment') @Watch('onRefreshMyEquipment') refreshMyEquipment: number = 0;
 
   aboutToAppear() {
     this.loadEquipmentData();
@@ -26,8 +27,13 @@ export struct ComparePage {
     this.handleAppStorageCamera();
   }
 
+  // 监听我的器材数据刷新
+  onRefreshMyEquipment() {
+    this.loadEquipmentData();
+  }
+
   private async loadEquipmentData() {
-    this.equipmentList = await myEquipmentService.getAllEquipment();
+    this.equipmentList = myEquipmentService.getAllEquipment();
   }
 
   private async loadAllCameras() {
@@ -107,170 +113,111 @@ export struct ComparePage {
         dragBar: true
       })
 
-      if (this.equipmentList.length < 2) {
-        // 器材不足提示
-        Column() {
-          Image($r('app.media.icon_compare'))
-            .width(64)
-            .height(64)
-            .fillColor($r('app.color.tertiary_text_color'))
-            .margin({ bottom: 16 })
-          
-          Text('器材对比')
-            .fontSize(18)
-            .fontWeight(FontWeight.Bold)
-            .fontColor($r('app.color.secondary_text_color'))
-            .margin({ bottom: 8 })
-          
-          Text('至少需要2个器材才能进行对比')
-            .fontSize(14)
-            .fontColor($r('app.color.tertiary_text_color'))
-            .margin({ bottom: 16 })
-          
-          Button('去添加器材')
+      // 对比内容
+      Column() {
+        // 选择器材区域
+        Row() {
+          // 器材1选择
+          Column() {
+            Text('器材1')
+              .fontSize(14)
+              .fontColor($r('app.color.secondary_text_color'))
+              .margin({ bottom: 8 })
+
+            Button(this.selectedEquipment1 ? this.selectedEquipment1.equipmentName : '选择器材')
+              .width('100%')
+              .height(48)
+              .fontSize(14)
+              .fontColor(this.selectedEquipment1 ? $r('app.color.primary_text_color') : $r('app.color.secondary_text_color'))
+              .backgroundColor($r('app.color.divider_color'))
+              .borderRadius(8)
+              .onClick(() => {
+                this.showSelector1 = true;
+              })
+          }
+          .layoutWeight(1)
+          .margin({ right: 8 })
+
+          // VS标识
+          Text('VS')
             .fontSize(16)
-            .fontColor($r('app.color.surface_color'))
-            .backgroundColor($r('app.color.brand_color'))
-            .borderRadius(8)
-            .padding({ left: 24, right: 24, top: 12, bottom: 12 })
-            .onClick(() => {
-              router.pushUrl({ url: 'pages/Index', params: { tabIndex: 2 } });
-            })
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.brand_color'))
+            .margin({ left: 8, right: 8 })
+
+          // 器材2选择
+          Column() {
+            Text('器材2')
+              .fontSize(14)
+              .fontColor($r('app.color.secondary_text_color'))
+              .margin({ bottom: 8 })
+
+            Button(this.selectedEquipment2 ? this.selectedEquipment2.equipmentName : '选择器材')
+              .width('100%')
+              .height(48)
+              .fontSize(14)
+              .fontColor(this.selectedEquipment2 ? $r('app.color.primary_text_color') : $r('app.color.secondary_text_color'))
+              .backgroundColor($r('app.color.divider_color'))
+              .borderRadius(8)
+              .onClick(() => {
+                this.showSelector2 = true;
+              })
+          }
+          .layoutWeight(1)
+          .margin({ left: 8 })
         }
         .width('100%')
-        .layoutWeight(1)
-        .justifyContent(FlexAlign.Center)
-      } else {
-        // 对比内容
-        Column() {
-          // 选择器材区域
+        .padding(16)
+        .backgroundColor($r('app.color.surface_color'))
+
+        // 一键清空按钮
+        if (this.selectedEquipment1 || this.selectedEquipment2) {
           Row() {
-            // 器材1选择
-            Column() {
-              Text('器材1')
-                .fontSize(14)
-                .fontColor($r('app.color.secondary_text_color'))
-                .margin({ bottom: 8 })
-              
-              Button(this.selectedEquipment1 ? this.selectedEquipment1.equipmentName : '选择器材')
-                .width('100%')
-                .height(48)
-                .fontSize(14)
-                .fontColor(this.selectedEquipment1 ? $r('app.color.primary_text_color') : $r('app.color.secondary_text_color'))
-                .backgroundColor($r('app.color.divider_color'))
-                .borderRadius(8)
-                .onClick(() => {
-                  this.showSelector1 = true;
-                })
-            }
-            .layoutWeight(1)
-            .margin({ right: 8 })
-
-            // VS标识
-            Text('VS')
-              .fontSize(16)
-              .fontWeight(FontWeight.Bold)
+            Button('一键清空')
+              .fontSize(14)
               .fontColor($r('app.color.brand_color'))
-              .margin({ left: 8, right: 8 })
-
-            // 器材2选择
-            Column() {
-              Text('器材2')
-                .fontSize(14)
-                .fontColor($r('app.color.secondary_text_color'))
-                .margin({ bottom: 8 })
-              
-              Button(this.selectedEquipment2 ? this.selectedEquipment2.equipmentName : '选择器材')
-                .width('100%')
-                .height(48)
-                .fontSize(14)
-                .fontColor(this.selectedEquipment2 ? $r('app.color.primary_text_color') : $r('app.color.secondary_text_color'))
-                .backgroundColor($r('app.color.divider_color'))
-                .borderRadius(8)
-                .onClick(() => {
-                  this.showSelector2 = true;
-                })
-            }
-            .layoutWeight(1)
-            .margin({ left: 8 })
+              .backgroundColor('transparent')
+              .border({ width: 1, color: $r('app.color.brand_color') })
+              .borderRadius(6)
+              .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+              .onClick(() => {
+                this.selectedEquipment1 = null;
+                this.selectedEquipment2 = null;
+              })
           }
           .width('100%')
-          .padding(16)
+          .justifyContent(FlexAlign.Center)
+          .padding({ top: 8, bottom: 8, left: 16, right: 16 })
           .backgroundColor($r('app.color.surface_color'))
-          
-          // 一键清空按钮
-          if (this.selectedEquipment1 || this.selectedEquipment2) {
-            Row() {
-              Button('一键清空')
-                .fontSize(14)
-                .fontColor($r('app.color.brand_color'))
-                .backgroundColor('transparent')
-                .border({ width: 1, color: $r('app.color.brand_color') })
-                .borderRadius(6)
-                .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-                .onClick(() => {
-                  this.selectedEquipment1 = null;
-                  this.selectedEquipment2 = null;
-                })
-            }
-            .width('100%')
-            .justifyContent(FlexAlign.Center)
-            .padding({ top: 8, bottom: 8, left: 16, right: 16 })
-            .backgroundColor($r('app.color.surface_color'))
-          }
-
-          // 对比结果
-          if (this.selectedEquipment1 && this.selectedEquipment2) {
-            Column() {
-              // 仅展示不同开关
-              Row() {
-                Text('仅展示不同')
-                  .fontSize(14)
-                  .fontColor($r('app.color.primary_text_color'))
-                
-                Toggle({ type: ToggleType.Switch, isOn: this.showOnlyDifferent })
-                  .selectedColor($r('app.color.brand_color'))
-                  .switchPointColor('#FFFFFF')
-                  .onChange((isOn: boolean) => {
-                    this.showOnlyDifferent = isOn;
-                  })
-              }
-              .width('100%')
-              .justifyContent(FlexAlign.SpaceBetween)
-              .padding({ left: 16, right: 16, top: 12, bottom: 12 })
-              .backgroundColor($r('app.color.surface_color'))
-              
-              Scroll() {
-                Column() {
-                  this.CompareResultCard()
-                }
-                .padding(16)
-              }
-              .layoutWeight(1)
-              .backgroundColor($r('app.color.background_color'))
-            }
-            .layoutWeight(1)
-          } else {
-            Column() {
-              Image($r('app.media.icon_compare'))
-                .width(48)
-                .height(48)
-                .fillColor($r('app.color.tertiary_text_color'))
-                .margin({ bottom: 12 })
-              
-              Text('请选择两个器材进行对比')
-                .fontSize(16)
-                .fontColor($r('app.color.secondary_text_color'))
-            }
-            .width('100%')
-            .layoutWeight(1)
-            .justifyContent(FlexAlign.Center)
-            .backgroundColor($r('app.color.background_color'))
-          }
         }
-        .width('100%')
-        .layoutWeight(1)
+
+        // 对比结果
+        if (this.selectedEquipment1 && this.selectedEquipment2) {
+          EnhancedCompareView({
+            equipment1: this.selectedEquipment1,
+            equipment2: this.selectedEquipment2
+          })
+            .layoutWeight(1)
+        } else {
+          Column() {
+            Image($r('app.media.icon_compare'))
+              .width(48)
+              .height(48)
+              .fillColor($r('app.color.tertiary_text_color'))
+              .margin({ bottom: 12 })
+
+            Text('请选择两个器材进行对比')
+              .fontSize(16)
+              .fontColor($r('app.color.secondary_text_color'))
+          }
+          .width('100%')
+          .layoutWeight(1)
+          .justifyContent(FlexAlign.Center)
+          .backgroundColor($r('app.color.background_color'))
+        }
       }
+      .width('100%')
+      .layoutWeight(1)
     }
     .width('100%')
     .height('100%')

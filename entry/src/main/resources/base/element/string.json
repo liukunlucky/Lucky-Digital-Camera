@@ -19,6 +19,10 @@
     {
       "name": "permission_write_imagevideo",
       "value": "用于保存回忆路线图片到相册"
+    },
+    {
+      "name": "permission_internet_reason",
+      "value": "用于获取相机数据和上传样张等网络功能"
     }
   ]
 }

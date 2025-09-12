@@ -6,7 +6,8 @@ import promptAction from '@ohos.promptAction';
 import router from '@ohos.router';
 
 @Component
-export struct SettingPage {
+@Entry
+struct SettingPage {
   @State showAboutSheet: boolean = false;
   @State showFeedbackSheet: boolean = false;
   @State feedbackText: string = '';
@@ -53,14 +54,29 @@ export struct SettingPage {
     Column() {
       // 顶部标题栏
       Row() {
+        Button() {
+          Image($r('app.media.icon_back'))
+            .width(24)
+            .height(24)
+            .fillColor($r('app.color.primary_text_color'))
+        }
+        .width(40)
+        .height(40)
+        .backgroundColor('transparent')
+        .onClick(() => {
+          router.back();
+        })
         Text('设置')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.primary_text_color'))
+          .layoutWeight(1)
+          .textAlign(TextAlign.Center)
+        Blank().width(40)
       }
       .width('100%')
       .height(56)
-      .justifyContent(FlexAlign.Center)
+      .padding({ left: 16, right: 16 })
       .backgroundColor($r('app.color.surface_color'))
       .shadow({
         radius: 2,
@@ -250,6 +266,197 @@ export struct SettingPage {
                           setLightColorMode(this.context);
                         }
                       }
+                    })
+                }
+                .width('100%')
+                .padding({
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                  bottom: 16
+                })
+              }
+              .width('100%')
+              .backgroundColor($r('app.color.card_background_color'))
+              .borderRadius(12)
+              .shadow({
+                radius: 2,
+                color: $r('app.color.shadow_color'),
+                offsetX: 0,
+                offsetY: 1
+              })
+            }
+            .width('100%')
+            .margin({ top: 24 })
+
+            // 功能设置分组
+            Column() {
+              // 功能设置卡片（包含标题）
+              Column() {
+                // 分组标题
+                Text('功能设置')
+                  .fontSize(18)
+                  .fontWeight(FontWeight.Bold)
+                  .fontColor($r('app.color.primary_text_color'))
+                  .alignSelf(ItemAlign.Start)
+                  .margin({ left: 16, top: 16, bottom: 8 })
+
+                // 自动保存收藏
+                Row() {
+                  Image($r('app.media.icon_like'))
+                    .width(20)
+                    .height(20)
+                    .fillColor($r('app.color.primary_text_color'))
+                    .margin({ right: 12 })
+
+                  Column() {
+                    Text('自动保存收藏')
+                      .fontSize(16)
+                      .fontColor($r('app.color.primary_text_color'))
+                      .fontWeight(FontWeight.Medium)
+
+                    Text('浏览器材时自动添加到收藏')
+                      .fontSize(14)
+                      .fontColor($r('app.color.secondary_text_color'))
+                      .margin({ top: 2 })
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .layoutWeight(1)
+
+                  Toggle({ type: ToggleType.Switch, isOn: false })
+                    .selectedColor($r('app.color.brand_color'))
+                    .switchPointColor('#FFFFFF')
+                    .onChange((isOn: boolean) => {
+                      AppStorage.setOrCreate('autoSaveFavorite', isOn);
+                    })
+                }
+                .width('100%')
+                .padding({
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                  bottom: 16
+                })
+
+                // 分隔线
+                Divider()
+                  .color($r('app.color.divider_color'))
+                  .strokeWidth(0.5)
+                  .margin({ left: 48, right: 16 })
+
+                // 智能推荐
+                Row() {
+                  Image($r('app.media.ic_star'))
+                    .width(20)
+                    .height(20)
+                    .fillColor($r('app.color.primary_text_color'))
+                    .margin({ right: 12 })
+
+                  Column() {
+                    Text('智能推荐')
+                      .fontSize(16)
+                      .fontColor($r('app.color.primary_text_color'))
+                      .fontWeight(FontWeight.Medium)
+
+                    Text('根据使用习惯推荐相关内容')
+                      .fontSize(14)
+                      .fontColor($r('app.color.secondary_text_color'))
+                      .margin({ top: 2 })
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .layoutWeight(1)
+
+                  Toggle({ type: ToggleType.Switch, isOn: true })
+                    .selectedColor($r('app.color.brand_color'))
+                    .switchPointColor('#FFFFFF')
+                    .onChange((isOn: boolean) => {
+                      AppStorage.setOrCreate('enableSmartRecommend', isOn);
+                    })
+                }
+                .width('100%')
+                .padding({
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                  bottom: 16
+                })
+
+                // 分隔线
+                Divider()
+                  .color($r('app.color.divider_color'))
+                  .strokeWidth(0.5)
+                  .margin({ left: 48, right: 16 })
+
+                // 数据统计
+                Row() {
+                  Image($r('app.media.icon_tj'))
+                    .width(20)
+                    .height(20)
+                    .fillColor($r('app.color.primary_text_color'))
+                    .margin({ right: 12 })
+
+                  Column() {
+                    Text('数据统计')
+                      .fontSize(16)
+                      .fontColor($r('app.color.primary_text_color'))
+                      .fontWeight(FontWeight.Medium)
+
+                    Text('收集使用数据以改善体验')
+                      .fontSize(14)
+                      .fontColor($r('app.color.secondary_text_color'))
+                      .margin({ top: 2 })
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .layoutWeight(1)
+
+                  Toggle({ type: ToggleType.Switch, isOn: true })
+                    .selectedColor($r('app.color.brand_color'))
+                    .switchPointColor('#FFFFFF')
+                    .onChange((isOn: boolean) => {
+                      AppStorage.setOrCreate('enableDataCollection', isOn);
+                    })
+                }
+                .width('100%')
+                .padding({
+                  left: 16,
+                  right: 16,
+                  top: 16,
+                  bottom: 16
+                })
+
+                // 分隔线
+                Divider()
+                  .color($r('app.color.divider_color'))
+                  .strokeWidth(0.5)
+                  .margin({ left: 48, right: 16 })
+
+                // 震动反馈
+                Row() {
+                  Image($r('app.media.icon_vb'))
+                    .width(20)
+                    .height(20)
+                    .fillColor($r('app.color.primary_text_color'))
+                    .margin({ right: 12 })
+
+                  Column() {
+                    Text('震动反馈')
+                      .fontSize(16)
+                      .fontColor($r('app.color.primary_text_color'))
+                      .fontWeight(FontWeight.Medium)
+
+                    Text('操作时提供触觉反馈')
+                      .fontSize(14)
+                      .fontColor($r('app.color.secondary_text_color'))
+                      .margin({ top: 2 })
+                  }
+                  .alignItems(HorizontalAlign.Start)
+                  .layoutWeight(1)
+
+                  Toggle({ type: ToggleType.Switch, isOn: true })
+                    .selectedColor($r('app.color.brand_color'))
+                    .switchPointColor('#FFFFFF')
+                    .onChange((isOn: boolean) => {
+                      AppStorage.setOrCreate('enableVibration', isOn);
                     })
                 }
                 .width('100%')

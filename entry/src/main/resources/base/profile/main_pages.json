@@ -5,6 +5,15 @@
     "pages/TestCameraData",
     "pages/SuggestionDetail",
     "pages/MemoryPage",
-    "pages/FavoritePage"
+    "pages/FavoritePage",
+    "pages/SamplePhotoDetailPage",
+    "pages/UploadSamplePage",
+    "pages/CameraSampleGalleryPage",
+    "pages/QuizPage",
+    "pages/LearningPathPage",
+    "pages/DataVisualizationPage",
+    "pages/ShootingSimulatorPage",
+    "pages/HomePage",
+    "pages/SettingPage"
   ]
 }

@@ -1,9 +1,18 @@
 import router from '@ohos.router';
+import { Quiz, LearningPath, DifficultyLevel } from '../model/Quiz';
+import { quizService } from '../service/QuizService';
+import { learningPathService } from '../service/LearningPathService';
 
 @Component
 export struct SuggestionPage {
   private tabsController: TabsController = new TabsController();
-  @State currentSection: string = 'suggestion'; // 'suggestion'、'encyclopedia' 或 'tutorial'
+  @State currentSection: string = 'suggestion'; // 'suggestion'、'encyclopedia'、'tutorial'、'quiz' 或 'learningPath'
+  @State quizzes: Quiz[] = [];
+  @State learningPaths: LearningPath[] = [];
+  @State selectedQuizCategory: string = '全部';
+  @State selectedPathCategory: string = '全部';
+  @State quizCategories: string[] = ['全部'];
+  @State pathCategories: string[] = ['全部'];
   @State suggestions: SuggestionItem[] = [
     {
       id: 1,
@@ -189,6 +198,18 @@ export struct SuggestionPage {
 
   aboutToAppear() {
     this.filterSuggestions();
+    this.loadQuizzes();
+    this.loadLearningPaths();
+  }
+
+  private loadQuizzes() {
+    this.quizzes = quizService.getAllQuizzes();
+    this.quizCategories = ['全部', ...quizService.getQuizCategories()];
+  }
+
+  private loadLearningPaths() {
+    this.learningPaths = learningPathService.getAllLearningPaths();
+    this.pathCategories = ['全部', ...learningPathService.getLearningPathCategories()];
   }
 
   filterSuggestions() {
@@ -216,10 +237,13 @@ export struct SuggestionPage {
   TabBuilder(title: string, targetIndex: number) {
     Column() {
       Text(title)
-        .fontSize(this.getCurrentTabIndex() === targetIndex ? 17 : 15)
+        .fontSize(this.getCurrentTabIndex() === targetIndex ? 18 : 14)
         .fontWeight(this.getCurrentTabIndex() === targetIndex ? FontWeight.Bold : FontWeight.Normal)
-        .fontColor(this.getCurrentTabIndex() === targetIndex ? '#FF6B35' : '#666666')
-        .margin({ bottom: 6 })
+        .fontColor(this.getCurrentTabIndex() === targetIndex ? '#FF6B35' : $r('app.color.secondary_text_color'))
+        .maxLines(1)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .textAlign(TextAlign.Center)
+        .margin({ bottom: 4 })
         .animation({
            duration: 150,
            curve: Curve.FastOutSlowIn
@@ -227,12 +251,12 @@ export struct SuggestionPage {
       
       // 底部指示线
       Row()
-        .width(this.getCurrentTabIndex() === targetIndex ? 28 : 0)
-        .height(3)
+        .width(this.getCurrentTabIndex() === targetIndex ? 20 : 0)
+        .height(2)
         .backgroundColor('#FF6B35')
-        .borderRadius(2)
+        .borderRadius(1)
         .animation({
-           duration: 100,
+           duration: 200,
            curve: Curve.FastOutSlowIn
          })
     }
@@ -240,7 +264,7 @@ export struct SuggestionPage {
     .height('100%')
     .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Center)
-    .padding({ top: 12, bottom: 8, left: 4, right: 4 })
+    .padding({ top: 8, bottom: 6, left: 2, right: 2 })
     .backgroundColor(Color.Transparent)
   }
 
@@ -249,8 +273,48 @@ export struct SuggestionPage {
       return 0;
     } else if (this.currentSection === 'encyclopedia') {
       return 1;
-    } else {
+    } else if (this.currentSection === 'tutorial') {
       return 2;
+    } else if (this.currentSection === 'quiz') {
+      return 3;
+    } else {
+      return 4;
+    }
+  }
+
+  private getDifficultyColor(difficulty: DifficultyLevel): string {
+    switch (difficulty) {
+      case DifficultyLevel.BEGINNER:
+        return '#4CAF50';
+      case DifficultyLevel.INTERMEDIATE:
+        return '#FF9800';
+      case DifficultyLevel.ADVANCED:
+        return '#F44336';
+      default:
+        return '#757575';
+    }
+  }
+
+  private getDifficultyText(difficulty: DifficultyLevel): string {
+    switch (difficulty) {
+      case DifficultyLevel.BEGINNER:
+        return '初级';
+      case DifficultyLevel.INTERMEDIATE:
+        return '中级';
+      case DifficultyLevel.ADVANCED:
+        return '高级';
+      default:
+        return '未知';
+    }
+  }
+
+  private formatDuration(minutes: number): string {
+    if (minutes < 60) {
+      return `${minutes}分钟`;
+    } else {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return remainingMinutes > 0 ? `${hours}小时${remainingMinutes}分钟` : `${hours}小时`;
     }
   }
 
@@ -266,7 +330,7 @@ export struct SuggestionPage {
       .width('100%')
       .height(56)
       .justifyContent(FlexAlign.Center)
-      .backgroundColor($r('app.color.surface_color'))
+      .backgroundColor($r('app.color.start_window_background'))
       .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
 
       // Tab导航栏
@@ -274,33 +338,47 @@ export struct SuggestionPage {
         TabContent() {
           this.SuggestionContent()
         }
-        .tabBar(this.TabBuilder('购买建议', 0))
+        .tabBar(this.TabBuilder('建议', 0))
         
         TabContent() {
           this.EncyclopediaContent()
         }
-        .tabBar(this.TabBuilder('相机百科', 1))
+        .tabBar(this.TabBuilder('百科', 1))
         
         TabContent() {
           this.TutorialContent()
         }
         .tabBar(this.TabBuilder('教程', 2))
+        
+        TabContent() {
+          this.QuizContent()
+        }
+        .tabBar(this.TabBuilder('测验', 3))
+        
+        // TabContent() {
+        //   this.LearningPathContent()
+        // }
+        // .tabBar(this.TabBuilder('学习', 4))
       }
       .width('100%')
       .layoutWeight(1)
       .barMode(BarMode.Fixed)
-      .barWidth('70%') // tab不占满全宽，稍微增加宽度
-      .barHeight(52)
-      .barBackgroundColor($r('app.color.surface_color'))
-      .animationDuration(100)
-      .scrollable(true) // 启用滑动切换
+      .barWidth('60%')
+      .barHeight(48)
+      .barBackgroundColor($r('app.color.start_window_background'))
+      .animationDuration(150)
+      .scrollable(true)
       .onChange((index: number) => {
         if (index === 0) {
           this.currentSection = 'suggestion';
         } else if (index === 1) {
           this.currentSection = 'encyclopedia';
-        } else {
+        } else if (index === 2) {
           this.currentSection = 'tutorial';
+        } else if (index === 3) {
+          this.currentSection = 'quiz';
+        } else {
+          this.currentSection = 'learningPath';
         }
       })
     }
@@ -642,6 +720,317 @@ export struct SuggestionPage {
   @Builder
   TutorialContent() {
     TutorialContentComponent()
+  }
+
+  @Builder
+  QuizContent() {
+    Column() {
+      // 分类筛选
+      Scroll() {
+        Row() {
+          ForEach(this.quizCategories, (category: string) => {
+            Button(category)
+              .fontSize(12)
+              .fontColor(this.selectedQuizCategory === category ? $r('app.color.surface_color') : $r('app.color.brand_color'))
+              .backgroundColor(this.selectedQuizCategory === category ? $r('app.color.brand_color') : $r('app.color.surface_color'))
+              .borderRadius(16)
+              .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+              .margin({ right: 8 })
+              .border({
+                width: 1,
+                color: $r('app.color.brand_color')
+              })
+              .onClick(() => {
+                this.selectedQuizCategory = category;
+              })
+          })
+        }
+      }
+      .scrollable(ScrollDirection.Horizontal)
+      .scrollBar(BarState.Off)
+      .width('100%')
+      .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+      .backgroundColor($r('app.color.background_color'))
+
+      // 测验列表
+      List() {
+        ForEach(this.quizzes.filter(quiz => 
+          this.selectedQuizCategory === '全部' || quiz.category === this.selectedQuizCategory
+        ), (quiz: Quiz) => {
+          ListItem() {
+            this.QuizCard(quiz)
+          }
+          .margin({ bottom: 12 })
+          .onClick(() => {
+            router.pushUrl({
+              url: 'pages/QuizPage',
+              params: {
+                quiz: quiz
+              }
+            });
+          })
+        })
+      }
+      .width('100%')
+      .layoutWeight(1)
+      .padding({ left: 16, right: 16, top: 8 })
+      .backgroundColor($r('app.color.background_color'))
+    }
+    .width('100%')
+    .layoutWeight(1)
+  }
+
+  @Builder
+  QuizCard(quiz: Quiz) {
+    Column() {
+      // 顶部信息
+      Row() {
+        Text(quiz.category)
+          .fontSize(10)
+          .fontColor($r('app.color.tag_text_primary'))
+          .backgroundColor($r('app.color.tag_background_primary'))
+          .borderRadius(8)
+          .padding({ left: 7, right: 7, top: 4, bottom: 4 })
+        
+        Text(this.getDifficultyText(quiz.difficulty))
+          .fontSize(10)
+          .fontColor(Color.White)
+          .backgroundColor(this.getDifficultyColor(quiz.difficulty))
+          .borderRadius(8)
+          .padding({ left: 7, right: 7, top: 4, bottom: 4 })
+          .margin({ left: 6 })
+        
+        Blank()
+        
+        Text(`${quiz.questions.length}题`)
+          .fontSize(10)
+          .fontColor($r('app.color.tertiary_text_color'))
+      }
+      .width('100%')
+      .margin({ bottom: 8 })
+
+      // 标题
+      Text(quiz.title)
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.primary_text_color'))
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .width('100%')
+        .margin({ bottom: 8 })
+
+      // 描述
+      Text(quiz.description)
+        .fontSize(14)
+        .fontColor($r('app.color.secondary_text_color'))
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .width('100%')
+        .margin({ bottom: 12 })
+
+      // 底部信息
+      Row() {
+        Row() {
+          Image($r('app.media.icon_time'))
+            .width(12)
+            .height(12)
+            .fillColor($r('app.color.tertiary_text_color'))
+            .margin({ right: 4 })
+          
+          Text(`${quiz.timeLimit || 30}分钟`)
+            .fontSize(12)
+            .fontColor($r('app.color.tertiary_text_color'))
+        }
+
+        Blank()
+
+        Row() {
+          Image($r('app.media.ic_arrow_right'))
+            .width(12)
+            .height(12)
+            .fillColor($r('app.color.brand_color'))
+          
+          Text('开始测验')
+            .fontSize(12)
+            .fontColor($r('app.color.brand_color'))
+            .margin({ left: 4 })
+        }
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .padding(16)
+    .backgroundColor($r('app.color.card_background_color'))
+    .borderRadius(12)
+    .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
+  }
+
+  @Builder
+  LearningPathContent() {
+    Column() {
+      // 分类筛选
+      Scroll() {
+        Row() {
+          ForEach(this.pathCategories, (category: string) => {
+            Button(category)
+              .fontSize(12)
+              .fontColor(this.selectedPathCategory === category ? $r('app.color.surface_color') : $r('app.color.brand_color'))
+              .backgroundColor(this.selectedPathCategory === category ? $r('app.color.brand_color') : $r('app.color.surface_color'))
+              .borderRadius(16)
+              .padding({ left: 12, right: 12, top: 6, bottom: 6 })
+              .margin({ right: 8 })
+              .border({
+                width: 1,
+                color: $r('app.color.brand_color')
+              })
+              .onClick(() => {
+                this.selectedPathCategory = category;
+              })
+          })
+        }
+      }
+      .scrollable(ScrollDirection.Horizontal)
+      .scrollBar(BarState.Off)
+      .width('100%')
+      .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+      .backgroundColor($r('app.color.background_color'))
+
+      // 学习路径列表
+      List() {
+        ForEach(this.learningPaths.filter(path => 
+          this.selectedPathCategory === '全部' || path.category === this.selectedPathCategory
+        ), (path: LearningPath) => {
+          ListItem() {
+            this.LearningPathCard(path)
+          }
+          .margin({ bottom: 12 })
+          .onClick(() => {
+            router.pushUrl({
+              url: 'pages/LearningPathPage',
+              params: {
+                pathId: path.id
+              }
+            });
+          })
+        })
+      }
+      .width('100%')
+      .layoutWeight(1)
+      .padding({ left: 16, right: 16, top: 8 })
+      .backgroundColor($r('app.color.background_color'))
+    }
+    .width('100%')
+    .layoutWeight(1)
+  }
+
+  @Builder
+  LearningPathCard(path: LearningPath) {
+    Column() {
+      // 顶部信息
+      Row() {
+        Text(path.category)
+          .fontSize(10)
+          .fontColor($r('app.color.tag_text_primary'))
+          .backgroundColor($r('app.color.tag_background_primary'))
+          .borderRadius(8)
+          .padding({ left: 7, right: 7, top: 4, bottom: 4 })
+        
+        Text(this.getDifficultyText(path.difficulty))
+          .fontSize(10)
+          .fontColor(Color.White)
+          .backgroundColor(this.getDifficultyColor(path.difficulty))
+          .borderRadius(8)
+          .padding({ left: 7, right: 7, top: 4, bottom: 4 })
+          .margin({ left: 6 })
+        
+        Blank()
+        
+        Text(`${path.nodes.length}节点`)
+          .fontSize(10)
+          .fontColor($r('app.color.tertiary_text_color'))
+      }
+      .width('100%')
+      .margin({ bottom: 8 })
+
+      // 标题
+      Text(path.title)
+        .fontSize(16)
+        .fontWeight(FontWeight.Bold)
+        .fontColor($r('app.color.primary_text_color'))
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .width('100%')
+        .margin({ bottom: 8 })
+
+      // 描述
+      Text(path.description)
+        .fontSize(14)
+        .fontColor($r('app.color.secondary_text_color'))
+        .maxLines(2)
+        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .width('100%')
+        .margin({ bottom: 12 })
+
+      // 进度条
+      Column() {
+        Row() {
+          Text('学习进度')
+            .fontSize(12)
+            .fontColor($r('app.color.secondary_text_color'))
+          
+          Blank()
+          
+          Text(`${Math.round(path.completionRate * 100)}%`)
+            .fontSize(12)
+            .fontColor($r('app.color.brand_color'))
+        }
+        .width('100%')
+        .margin({ bottom: 4 })
+        
+        Progress({ value: path.completionRate * 100, total: 100, type: ProgressType.Linear })
+          .width('100%')
+          .height(4)
+          .color($r('app.color.brand_color'))
+          .backgroundColor($r('app.color.background_color'))
+      }
+      .width('100%')
+      .margin({ bottom: 12 })
+
+      // 底部信息
+      Row() {
+        Row() {
+          Image($r('app.media.icon_time'))
+            .width(12)
+            .height(12)
+            .fillColor($r('app.color.tertiary_text_color'))
+            .margin({ right: 4 })
+          
+          Text(this.formatDuration(path.estimatedDuration))
+            .fontSize(12)
+            .fontColor($r('app.color.tertiary_text_color'))
+        }
+
+        Blank()
+
+        Row() {
+          Image($r('app.media.ic_arrow_right'))
+            .width(12)
+            .height(12)
+            .fillColor($r('app.color.brand_color'))
+          
+          Text(path.completionRate > 0 ? '继续学习' : '开始学习')
+            .fontSize(12)
+            .fontColor($r('app.color.brand_color'))
+            .margin({ left: 4 })
+        }
+      }
+      .width('100%')
+    }
+    .width('100%')
+    .padding(16)
+    .backgroundColor($r('app.color.card_background_color'))
+    .borderRadius(12)
+    .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
   }
 }
 

@@ -1,13 +1,13 @@
-import { HomePage } from './HomePage';
+import { WelcomePage } from './WelcomePage';
 import { SuggestionPage } from './SuggestionPage';
 import { MyEquipmentPage } from './MyEquipmentPage';
 import { ComparePage } from './ComparePage';
-import { SettingPage } from './SettingPage';
 import { myEquipmentService } from '../service/MyEquipmentService';
 import { favoriteService } from '../service/FavoriteService';
 import { common } from '@kit.AbilityKit';
 import app from '@system.app';
 import { promptAction } from '@kit.ArkUI';
+import { SampleGalleryPage } from './SampleGalleryPage';
 
 @Entry
 @Component
@@ -26,7 +26,7 @@ struct Index {
 
   // 监听tab切换
   onSwitchToTab() {
-    if (this.switchToTab >= 0 && this.switchToTab <= 3) {
+    if (this.switchToTab >= 0 && this.switchToTab <= 4) {
       this.currentTabIndex = this.switchToTab;
       this.tabsController.changeIndex(this.switchToTab);
       // 重置switchToTab值
@@ -38,7 +38,7 @@ struct Index {
     Tabs({ index: this.currentTabIndex, controller: this.tabsController }) {
       // 首页Tab
       TabContent() {
-        HomePage()
+        WelcomePage()
       }
       .tabBar(this.TabBuilder('首页', 0, $r('app.media.icon_home')))
 
@@ -54,17 +54,17 @@ struct Index {
       }
       .tabBar(this.TabBuilder('器材对比', 2, $r('app.media.icon_compare')))
 
+      // 样张Tab
+      TabContent() {
+        SampleGalleryPage()
+      }
+      .tabBar(this.TabBuilder('样张库', 3, $r('app.media.icon_sample')))
+
       // 我的器材Tab
       TabContent() {
         MyEquipmentPage()
       }
-      .tabBar(this.TabBuilder('我的', 3, $r('app.media.ic_mine')))
-
-      // 设置Tab
-      TabContent() {
-        SettingPage()
-      }
-      .tabBar(this.TabBuilder('设置', 4, $r('app.media.icon_settings')))
+      .tabBar(this.TabBuilder('我的', 4, $r('app.media.ic_mine')))
     }
     .width('100%')
     .height('100%')

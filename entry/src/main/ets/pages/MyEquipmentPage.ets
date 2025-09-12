@@ -71,6 +71,10 @@ export struct MyEquipmentPage {
       this.loadEquipmentData();
       this.resetForm();
       this.showAddSheet = false;
+      
+      // 通知器材对比页面刷新数据
+      AppStorage.setOrCreate('refreshMyEquipment', Date.now());
+      
       promptAction.showToast({ message: '添加成功', duration: 2000 });
     } else {
       promptAction.showToast({ message: '添加失败', duration: 2000 });
@@ -331,26 +335,34 @@ export struct MyEquipmentPage {
           .fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.primary_text_color'))
 
-        Button() {
-          Image($r('app.media.ic_add'))
-            .width(20)
-            .height(20)
-            .fillColor('#FFFFFF')
+        Column({ space: 8 }) {
+          
+          Button() {
+            Image($r('app.media.icon_add2'))
+              .width(20)
+              .height(20)
+              .fillColor(Color.White)
+          }
+          .width(36)
+          .height(36)
+          .borderRadius(18)
+          .backgroundColor($r('app.color.brand_color'))
+          .visibility(this.currentTabIndex === 0 ? Visibility.Visible : Visibility.Hidden)
+          .onClick(() => {
+            this.showAddSheet = true;
+          })
+          Text('添加器材')
+            .fontSize(10)
+            .fontColor($r('app.color.brand_color'))
+            .visibility(this.currentTabIndex === 0 ? Visibility.Visible : Visibility.Hidden)
         }
-        .width(36)
-        .height(36)
-        .borderRadius(18)
-        .backgroundColor($r('app.color.brand_color'))
-        .visibility(this.currentTabIndex === 0 ? Visibility.Visible : Visibility.Hidden)
-        .onClick(() => {
-          this.showAddSheet = true;
-        })
+        .alignItems(HorizontalAlign.Center)
       }
       .width('100%')
       .height(56)
       .justifyContent(FlexAlign.SpaceBetween)
       .padding({ left: 16, right: 16 })
-      .backgroundColor($r('app.color.surface_color'))
+      .backgroundColor($r('app.color.start_window_background'))
       .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
       .bindSheet($$this.showAddSheet, this.AddEquipmentSheet(), {
         height: '60%',
@@ -380,7 +392,7 @@ export struct MyEquipmentPage {
       .barMode(BarMode.Fixed)
       .barWidth('70%')
       .barHeight(52)
-      .barBackgroundColor($r('app.color.surface_color'))
+      .barBackgroundColor($r('app.color.start_window_background'))
       .animationDuration(200)
       .scrollable(true)
       .onChange((index: number) => {
@@ -472,7 +484,6 @@ export struct MyEquipmentPage {
         .width('100%')
         .layoutWeight(1)
         .justifyContent(FlexAlign.Center)
-        .backgroundColor($r('app.color.background_color'))
       }
   }
 
@@ -492,7 +503,7 @@ export struct MyEquipmentPage {
           .fontColor($r('app.color.secondary_text_color'))
       }
       .width('100%')
-      .layoutWeight(1)
+      .height('100%')
       .justifyContent(FlexAlign.Center)
       .backgroundColor($r('app.color.background_color'))
     } else if (this.favoritesList.length === 0) {
@@ -514,7 +525,7 @@ export struct MyEquipmentPage {
           .fontColor($r('app.color.tertiary_text_color'))
           .margin({ bottom: 24 })
 
-        Button('去首页看看')
+        Button('去数据库看看')
           .width(120)
           .height(40)
           .fontSize(14)
@@ -522,41 +533,39 @@ export struct MyEquipmentPage {
           .fontColor('#FFFFFF')
           .borderRadius(20)
           .onClick(() => {
-            // 切换到首页tab (index: 0)
-            AppStorage.setOrCreate('switchToTab', 0);
-            router.back();
+            router.pushUrl({
+              url: 'pages/HomePage',
+            });
           })
       }
       .width('100%')
-      .layoutWeight(1)
+      .height('100%')
       .justifyContent(FlexAlign.Center)
       .backgroundColor($r('app.color.background_color'))
     } else {
       // 收藏列表
-      Scroll() {
-        Column() {
+      List() {
+        ListItem() {
           Text(`共收藏了 ${this.favoritesList.length} 台相机`)
             .fontSize(14)
             .fontColor($r('app.color.secondary_text_color'))
-            .margin({ bottom: 16 })
+            .margin({ bottom: 8 })
             .alignSelf(ItemAlign.Start)
-
-          ForEach(this.favoritesList, (camera: CameraDataItem, index: number) => {
-            Column() {
-              this.FavoriteCameraCard(camera)
-            }
-            .margin({ bottom: 12 })
-          }, (camera: CameraDataItem) => camera.Brand + camera.Model)
         }
-        .width('100%')
         .padding({ left: 16, right: 16, top: 16 })
-        .alignItems(HorizontalAlign.Start)
-        .justifyContent(FlexAlign.Start)
+
+        ForEach(this.favoritesList, (camera: CameraDataItem, index: number) => {
+          ListItem() {
+            this.FavoriteCameraCard(camera)
+          }
+          .margin({ bottom: 12 })
+          .padding({ left: 16, right: 16 })
+        }, (camera: CameraDataItem) => camera.Brand + camera.Model)
       }
       .width('100%')
-      .layoutWeight(1)
+      .height('100%')
       .backgroundColor($r('app.color.background_color'))
-      .align(Alignment.TopStart)
+      .alignListItem(ListItemAlign.Start)
     }
   }
 
