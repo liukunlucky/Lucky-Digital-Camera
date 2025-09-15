@@ -354,19 +354,14 @@ export struct EnhancedCompareView {
       }
       
       // 对比列表
-      List() {
+      Column() {
         ForEach(this.getFilteredItems(), (item: CompareItem) => {
-          ListItem() {
-            this.CompareItemCard(item)
-          }
-          .margin({ bottom: 8 })
+          this.CompareItemCard(item);
         })
       }
-      .layoutWeight(1)
-      .scrollBar(BarState.Auto)
+      .width('100%')
     }
     .width('100%')
-    .height('100%')
     .bindSheet($$this.showWeightConfig, this.WeightConfigSheet(), {
       height: '70%',
       showClose: false,
@@ -457,6 +452,7 @@ export struct EnhancedCompareView {
     }
     .width('100%')
     .padding(12)
+    .margin({ top: 6, bottom: 6 })
     .backgroundColor(item.isHighlight ? $r('app.color.highlight_background') : $r('app.color.card_background_color'))
     .borderRadius(8)
     .border({ 

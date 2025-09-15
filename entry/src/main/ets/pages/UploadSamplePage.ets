@@ -283,6 +283,7 @@ struct UploadSamplePage {
         .padding(16)
       }
       .layoutWeight(1)
+      .edgeEffect(EdgeEffect.Spring)
       .scrollBar(BarState.Off)
     }
     .width('100%')
@@ -820,7 +821,7 @@ struct UploadSamplePage {
             .fontSize(14)
             .fontColor($r('app.color.primary_text_color'))
             .width('100%')
-          
+
           Text('其他用户可以查看和搜索到此样张')
             .fontSize(12)
             .fontColor($r('app.color.secondary_text_color'))
@@ -829,7 +830,7 @@ struct UploadSamplePage {
         }
         .layoutWeight(1)
         .alignItems(HorizontalAlign.Start)
-        
+
         Toggle({ type: ToggleType.Switch, isOn: this.isPublic })
           .selectedColor($r('app.color.brand_color'))
           .onChange((isOn: boolean) => {
@@ -840,6 +841,7 @@ struct UploadSamplePage {
     }
     .width('100%')
     .alignItems(HorizontalAlign.Start)
+    .visibility(Visibility.None)
     .margin({ bottom: 32 })
   }
 

@@ -9,6 +9,8 @@ export struct WelcomePage {
   @State totalBrands: number = 0;
   @State myEquipmentCount: number = 0;
   @State favoritesCount: number = 0;
+  @State quizCount: number = 0;
+  @State sampleGalleryCount: number = 0;
   @State isLoading: boolean = true;
   @State currentTime: string = '';
   @State greeting: string = '';
@@ -39,6 +41,18 @@ export struct WelcomePage {
       // 加载收藏数量
       const favorites = favoriteService.getFavorites();
       this.favoritesCount = favorites.length;
+
+      // 加载测验数据数量
+      const quizModule = await import('../service/QuizService');
+      const quizService = quizModule.QuizService.getInstance();
+      const quizHistory = quizService.getUserQuizHistory();
+      this.quizCount = quizHistory.length;
+
+      // 加载样张库数据数量
+      const sampleModule = await import('../service/SampleGalleryService');
+      const sampleService = sampleModule.SampleGalleryService.getInstance();
+      const sampleStats = await sampleService.getSampleStats();
+      this.sampleGalleryCount = sampleStats.totalPhotos;
 
       this.isLoading = false;
     } catch (error) {
@@ -79,12 +93,23 @@ export struct WelcomePage {
     AppStorage.setOrCreate('switchToTab', 1);
   }
 
+  private navigateToQuiz() {
+    AppStorage.setOrCreate('switchToTab', 1);
+    AppStorage.setOrCreate('suggestionSwitchToTab', 2);
+  }
+
   private navigateToComparison() {
     AppStorage.setOrCreate('switchToTab', 2);
   }
 
   private navigateToMyEquipment() {
     AppStorage.setOrCreate('switchToTab', 4);
+    AppStorage.setOrCreate('equipmentSwitchToTab', 0);
+  }
+
+  navigateToMyFav() {
+    AppStorage.setOrCreate('switchToTab', 4);
+    AppStorage.setOrCreate('equipmentSwitchToTab', 1);
   }
 
   private navigateToSetting() {
@@ -118,13 +143,14 @@ export struct WelcomePage {
       Row() {
         Column() {
           Text('数码回忆')
-            .fontSize(24)
+            .fontSize(28)
             .fontWeight(FontWeight.Bold)
             .fontColor($r('app.color.primary_text_color'))
           Text('管理、探索与学习您的数码装备')
             .fontSize(16)
             .fontColor($r('app.color.secondary_text_color'))
-            .margin({ top: 4 })
+            .fontFamily('cjzj')
+            .margin({ top: 8 })
         }
         .alignItems(HorizontalAlign.Start)
 
@@ -139,7 +165,7 @@ export struct WelcomePage {
         }
         .width(40)
         .height(40)
-        .backgroundColor($r('app.color.surface_color'))
+        .backgroundColor($r('app.color.welcome_setting_bg_color'))
         .borderRadius(20)
         .onClick((): void => this.navigateToSetting())
       }
@@ -180,22 +206,35 @@ export struct WelcomePage {
 
               GridItem() {
                 this.StatisticCard('我的器材', this.myEquipmentCount.toString(), '台设备', '#45B7D1', (): void => {
+                  this.navigateToMyEquipment()
                   AppStorage.setOrCreate('switchToTab', 4);
                 })
               }
 
               GridItem() {
                 this.StatisticCard('我的收藏', this.favoritesCount.toString(), '个收藏', '#96CEB4', (): void => {
-                  AppStorage.setOrCreate('switchToTab', 4);
+                  this.navigateToMyFav()
+                })
+              }
+
+              GridItem() {
+                this.StatisticCard('我的测验', this.quizCount.toString(), '次测验', '#9C27B0', (): void => {
+                  this.navigateToQuiz()
+                })
+              }
+
+              GridItem() {
+                this.StatisticCard('我的样张库', this.sampleGalleryCount.toString(), '张样张', '#FFC107', (): void => {
+                  this.navigateToSamplePage()
                 })
               }
             }
             .columnsTemplate('1fr 1fr')
-            .rowsTemplate('1fr 1fr')
+            .rowsTemplate('1fr 1fr 1fr')
             .columnsGap(16)
             .rowsGap(16)
             .width('100%')
-            .height(200)
+            .height(300)
             .margin({top: 20})
             .padding({ left: 20, right: 20, })
           }
@@ -243,8 +282,8 @@ export struct WelcomePage {
       }
       .width('100%')
       .layoutWeight(1)
-      .width('100%')
       .height('100%')
+      .edgeEffect(EdgeEffect.Spring)
       .backgroundColor($r('app.color.background_color'))
     }
   }

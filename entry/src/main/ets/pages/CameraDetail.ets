@@ -365,6 +365,7 @@ struct CameraDetail {
           .padding({ left: 16, right: 16, bottom: 20 })
         }
         .layoutWeight(1)
+        .edgeEffect(EdgeEffect.Spring)
         .backgroundColor($r('app.color.background_color'))
       } else {
         Column() {
@@ -599,6 +600,7 @@ struct CameraDetail {
           }
         }
         .scrollable(ScrollDirection.Horizontal)
+        .edgeEffect(EdgeEffect.Spring)
         .scrollBar(BarState.Off)
       }
       .width('100%')

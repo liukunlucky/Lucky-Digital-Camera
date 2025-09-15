@@ -127,6 +127,7 @@ struct SamplePhotoDetailPage {
           }
         }
         .layoutWeight(1)
+        .edgeEffect(EdgeEffect.Spring)
         .scrollBar(BarState.Off)
         
         // 底部操作栏

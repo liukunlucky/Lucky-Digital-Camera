@@ -22,6 +22,7 @@ export struct MyEquipmentPage {
   @State favoritesList: CameraDataItem[] = []; // 收藏列表
   @State isFavoriteLoading: boolean = false;
   @StorageProp('refreshHomeFavorites') @Watch('onRefreshFavorites') refreshHomeFavorites: number = 0;
+  @StorageProp('equipmentSwitchToTab') @Watch('onSwitchToTab') switchToTab: number = -1;
   private tabsController: TabsController = new TabsController();
 
   aboutToAppear() {
@@ -29,7 +30,22 @@ export struct MyEquipmentPage {
     this.loadCameraData();
     this.loadFavorites();
     this.transactionDate = new Date().toISOString().split('T')[0];
+    if (this.switchToTab >= 0 && this.switchToTab <= 1) {
+      this.currentTabIndex = this.switchToTab;
+      this.tabsController.changeIndex(this.switchToTab);
+      AppStorage.setOrCreate('equipmentSwitchToTab', -1);
+    }
   }
+
+  // 监听tab切换
+  onSwitchToTab() {
+    if (this.switchToTab >= 0 && this.switchToTab <= 1) {
+      this.currentTabIndex = this.switchToTab;
+      this.tabsController.changeIndex(this.switchToTab);
+      AppStorage.setOrCreate('equipmentSwitchToTab', -1);
+    }
+  }
+
 
   // 监听收藏状态刷新
   onRefreshFavorites() {
@@ -335,28 +351,20 @@ export struct MyEquipmentPage {
           .fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.primary_text_color'))
 
-        Column({ space: 8 }) {
-          
-          Button() {
-            Image($r('app.media.icon_add2'))
-              .width(20)
-              .height(20)
-              .fillColor(Color.White)
-          }
-          .width(36)
-          .height(36)
-          .borderRadius(18)
-          .backgroundColor($r('app.color.brand_color'))
-          .visibility(this.currentTabIndex === 0 ? Visibility.Visible : Visibility.Hidden)
-          .onClick(() => {
-            this.showAddSheet = true;
-          })
-          Text('添加器材')
-            .fontSize(10)
-            .fontColor($r('app.color.brand_color'))
-            .visibility(this.currentTabIndex === 0 ? Visibility.Visible : Visibility.Hidden)
+        Button() {
+          Image($r('app.media.icon_add2'))
+            .width(20)
+            .height(20)
+            .fillColor(Color.White)
         }
-        .alignItems(HorizontalAlign.Center)
+        .width(36)
+        .height(36)
+        .borderRadius(18)
+        .backgroundColor($r('app.color.brand_color'))
+        .visibility(this.currentTabIndex === 0 ? Visibility.Visible : Visibility.Hidden)
+        .onClick(() => {
+          this.showAddSheet = true;
+        })
       }
       .width('100%')
       .height(56)
@@ -455,9 +463,8 @@ export struct MyEquipmentPage {
         // 空状态
         Column() {
           Image($r('app.media.ic_empty'))
-            .width(120)
-            .height(120)
-            .fillColor($r('app.color.tertiary_text_color'))
+            .width(173)
+            .height(128)
             .margin({ bottom: 16 })
 
           Text('器材库空空如也～')

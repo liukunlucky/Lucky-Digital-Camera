@@ -11,7 +11,7 @@ import { EquipmentDashboard } from '../components/EquipmentDashboard';
 
 @Entry
 @Component
-export struct MemoryPage {
+struct MemoryPage {
   @State memoryCameras: MemoryCamera[] = [];
   @State isShowingShareSheet: boolean = false;
   @State myEquipmentList: MyEquipmentItem[] = [];
@@ -418,6 +418,7 @@ export struct MemoryPage {
         .id('scrollContainer')
         .width('100%')
         .layoutWeight(1)
+        .edgeEffect(EdgeEffect.Spring)
         .backgroundColor($r('app.color.background_color'))
         .scrollBar(BarState.Auto)
       }

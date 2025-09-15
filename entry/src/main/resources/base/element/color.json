@@ -17,6 +17,10 @@
       "value": "#FFFFFF"
     },
     {
+      "name": "welcome_setting_bg_color",
+      "value": "#F8F9FA"
+    },
+    {
       "name": "card_background_color",
       "value": "#FFFFFF"
     },

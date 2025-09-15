@@ -375,11 +375,10 @@ export struct SampleGalleryPage {
   @Builder
   buildEmptyView() {
     Column() {
-      Image($r('app.media.icon_user'))
-        .width(80)
-        .height(80)
-        .fillColor($r('app.color.secondary_text_color'))
-        .opacity(0.5)
+      Image($r('app.media.ic_empty'))
+        .width(173)
+        .height(128)
+        .margin({ bottom: 16 })
       
       Text('暂无样张')
         .fontSize(16)
@@ -403,7 +402,7 @@ export struct SampleGalleryPage {
         })
     }
     .width('100%')
-    .height(300)
+    .layoutWeight(1)
     .justifyContent(FlexAlign.Center)
   }
 
@@ -425,6 +424,7 @@ export struct SampleGalleryPage {
     }
     .layoutWeight(1)
     .scrollBar(BarState.Off)
+    .edgeEffect(EdgeEffect.Spring)
     .align(Alignment.Top)
   }
 

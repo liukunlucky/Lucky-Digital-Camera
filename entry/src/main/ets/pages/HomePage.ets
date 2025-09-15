@@ -246,6 +246,7 @@ struct HomePage {
           .padding({ left: 16, right: 16 })
         }
         .scrollable(ScrollDirection.Horizontal)
+        .edgeEffect(EdgeEffect.Spring)
         .scrollBar(BarState.Off)
       }
       .width('100%')

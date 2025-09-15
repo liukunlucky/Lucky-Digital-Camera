@@ -1,6 +1,6 @@
 import { AbilityConstant, Configuration, ConfigurationConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { window } from '@kit.ArkUI';
+import { font, window } from '@kit.ArkUI';
 import { WindowAbility } from './WindowAbility';
 
 const DOMAIN = 0x0000;
@@ -36,6 +36,10 @@ export default class EntryAbility extends UIAbility {
       const bottomRectHeight = avoidAreaBottom.bottomRect.height;
       AppStorage.setOrCreate('topRectHeight', windowClass.getUIContext().px2vp(topRectHeight));
       AppStorage.setOrCreate('bottomRectHeight', windowClass.getUIContext().px2vp(bottomRectHeight));
+      font.registerFont({
+        familyName: 'cjzj',
+        familySrc: $rawfile('font1.ttf')
+      })
     });
   }
 

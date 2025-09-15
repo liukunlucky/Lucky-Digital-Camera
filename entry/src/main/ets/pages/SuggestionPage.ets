@@ -195,11 +195,34 @@ export struct SuggestionPage {
   @State searchText: string = '';
   @State categories: string[] = ['全部', '入门指南', '技术对比', '镜头指南', '保养维护', '产品推荐', '配件指南', '预算规划', '购买技巧'];
   @State filteredSuggestions: SuggestionItem[] = this.suggestions;
+  @StorageProp('suggestionSwitchToTab') @Watch('onSwitchToTab') switchToTab: number = -1;
 
   aboutToAppear() {
     this.filterSuggestions();
     this.loadQuizzes();
     this.loadLearningPaths();
+    if (this.switchToTab == 2) {
+      this.currentSection = 'quiz';
+      this.tabsController.changeIndex(2);
+      AppStorage.setOrCreate('suggestionSwitchToTab', -1);
+    }
+  }
+
+  // 监听tab切换
+  onSwitchToTab() {
+    if (this.switchToTab >= 0 && this.switchToTab <= 2) {
+      if (this.switchToTab === 0) {
+        this.currentSection = 'suggestion';
+      } else if (this.switchToTab === 1) {
+        this.currentSection = 'encyclopedia';
+      } else if (this.switchToTab === 2) {
+        this.currentSection = 'quiz';
+      } else if (this.switchToTab == 3) {
+        this.currentSection = 'tutorial';
+      }
+      this.tabsController.changeIndex(this.switchToTab);
+      AppStorage.setOrCreate('suggestionSwitchToTab', -1);
+    }
   }
 
   private loadQuizzes() {
@@ -273,12 +296,12 @@ export struct SuggestionPage {
       return 0;
     } else if (this.currentSection === 'encyclopedia') {
       return 1;
-    } else if (this.currentSection === 'tutorial') {
-      return 2;
     } else if (this.currentSection === 'quiz') {
+      return 2;
+    } else if (this.currentSection === 'tutorial') {
       return 3;
     } else {
-      return 4;
+      return 4
     }
   }
 
@@ -338,7 +361,7 @@ export struct SuggestionPage {
         TabContent() {
           this.SuggestionContent()
         }
-        .tabBar(this.TabBuilder('建议', 0))
+        .tabBar(this.TabBuilder('指南', 0))
         
         TabContent() {
           this.EncyclopediaContent()
@@ -346,19 +369,14 @@ export struct SuggestionPage {
         .tabBar(this.TabBuilder('百科', 1))
         
         TabContent() {
-          this.TutorialContent()
-        }
-        .tabBar(this.TabBuilder('教程', 2))
-        
-        TabContent() {
           this.QuizContent()
         }
-        .tabBar(this.TabBuilder('测验', 3))
-        
-        // TabContent() {
-        //   this.LearningPathContent()
-        // }
-        // .tabBar(this.TabBuilder('学习', 4))
+        .tabBar(this.TabBuilder('测验', 2))
+
+        TabContent() {
+          this.TutorialContent()
+        }
+        .tabBar(this.TabBuilder('教程', 3))
       }
       .width('100%')
       .layoutWeight(1)
@@ -374,11 +392,9 @@ export struct SuggestionPage {
         } else if (index === 1) {
           this.currentSection = 'encyclopedia';
         } else if (index === 2) {
-          this.currentSection = 'tutorial';
-        } else if (index === 3) {
           this.currentSection = 'quiz';
-        } else {
-          this.currentSection = 'learningPath';
+        } else if (index == 3) {
+          this.currentSection = 'tutorial';
         }
       })
     }
@@ -891,6 +907,7 @@ export struct SuggestionPage {
       }
       .scrollable(ScrollDirection.Horizontal)
       .scrollBar(BarState.Off)
+      .edgeEffect(EdgeEffect.Spring)
       .width('100%')
       .padding({ left: 16, right: 16, top: 8, bottom: 8 })
       .backgroundColor($r('app.color.background_color'))

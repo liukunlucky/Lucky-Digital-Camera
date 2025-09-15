@@ -80,6 +80,7 @@ struct SuggestionDetail {
           .padding({ left: 16, right: 16, top: 20, bottom: 20 })
         }
         .layoutWeight(1)
+        .edgeEffect(EdgeEffect.Spring)
         .backgroundColor($r('app.color.background_color'))
       } else {
         Column() {

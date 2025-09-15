@@ -1,10 +1,26 @@
 // 数据可视化页面
 import router from '@ohos.router';
-import { ChartComponent, ChartData, ChartType } from '../components/ChartComponent';
+import { hmChart, ChartOptions, hmChartType } from '@wuyan/hm_chart';
 import { cameraDataJsonService } from '../service/CameraDataJsonService';
 import { myEquipmentService } from '../service/MyEquipmentService';
 import { quizService } from '../service/QuizService';
 import { learningPathService } from '../service/LearningPathService';
+
+// 定义图表数据接口
+interface ChartData {
+  label: string;
+  value: number;
+}
+
+interface ColorStep {
+  offset: number;
+  color: string;
+}
+
+interface TrendData {
+  date: string;
+  count: number;
+}
 
 @Entry
 @Component
@@ -16,11 +32,217 @@ struct DataVisualizationPage {
   @State priceRangeData: ChartData[] = [];
   @State categoryData: ChartData[] = [];
   @State isLoading: boolean = true;
-  @State currentTabIndex: number = 0; // 0: 我的器材, 1: 我的收藏
+  @State currentTabIndex: number = 0; // 0: 数据库统计, 1: 我的器材, 2: 学习进度
   private tabsController: TabsController = new TabsController();
+  
+  // ECharts 图表实例
+  @State brandChart: hmChartType | null = null;
+  @State equipmentChart: hmChartType | null = null;
+  @State priceChart: hmChartType | null = null;
+  @State learningChart: hmChartType | null = null;
+  @State quizChart: hmChartType | null = null;
+  @State trendChart: hmChartType | null = null;
+  @State quizOverallChart: hmChartType | null = null;
+  @State quizCategoryChart: hmChartType | null = null;
+  @State quizTrendChart: hmChartType | null = null;
+  @State learningActivityChart: hmChartType | null = null;
 
   aboutToAppear() {
     this.loadAllData();
+  }
+
+  // 生成测验完成率柱状图配置
+  getQuizBarChartOptions(): ChartOptions {
+    return {
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: this.quizData.map(item => item.label),
+        axisLabel: {
+          fontSize: 12
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: {
+          fontSize: 12,
+          formatter: '{value}%'
+        }
+      },
+      series: [{
+        name: '完成率',
+        type: 'bar',
+        data: this.quizData.map(item => item.value),
+        itemStyle: {
+          color: '#FFEAA7'
+        },
+        emphasis: {
+          itemStyle: {
+            color: '#FFEAA7'
+          }
+        }
+      }]
+    };
+  }
+
+  // 生成测验总体表现饼图配置
+  getQuizOverallChartOptions(): ChartOptions {
+    return {
+      tooltip: {
+        trigger: 'item'
+      },
+      legend: {
+        orient: 'vertical',
+        left: 'left',
+        data: ['已完成', '进行中', '未开始']
+      },
+      series: [{
+        name: '测验状态',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        data: [60, 25, 15],
+        label: {
+          show: true
+        }
+      }]
+    };
+  }
+
+  // 生成学习路径进度饼图配置
+  getLearningProgressChartOptions(): ChartOptions {
+    const colors = ['#4ECDC4', '#FFE66D', '#FF6B6B'];
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)'
+      },
+      legend: {
+        orient: 'vertical',
+        left: 'left',
+        data: this.learningData.map(item => item.label)
+      },
+      series: [{
+        name: '学习进度',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        data: this.learningData.map(item => item.value)
+      }]
+    };
+  }
+
+  // 生成测验分类分布饼图配置
+  getQuizCategoryChartOptions(): ChartOptions {
+    const categoryData: ChartData[] = [
+      { label: '基础理论', value: 25 },
+      { label: '拍摄技巧', value: 30 },
+      { label: '后期处理', value: 20 },
+      { label: '器材知识', value: 15 },
+      { label: '构图美学', value: 10 }
+    ];
+    const colors = ['#FF6B35', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57'];
+    
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)'
+      },
+      legend: {
+        orient: 'vertical',
+        left: 'left',
+        data: categoryData.map(item => item.label)
+      },
+      series: [{
+        name: '题目分类',
+        type: 'pie',
+        radius: ['0%', '70%'],
+        data: categoryData.map(item => item.value)
+      }]
+    };
+  }
+
+  // 生成测验趋势折线图配置
+  getQuizTrendChartOptions(): ChartOptions {
+    const trendData: TrendData[] = [
+      { date: '1月', count: 12 },
+      { date: '2月', count: 19 },
+      { date: '3月', count: 15 },
+      { date: '4月', count: 25 },
+      { date: '5月', count: 22 },
+      { date: '6月', count: 30 }
+    ];
+    
+    return {
+      tooltip: {
+        trigger: 'axis'
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: trendData.map(item => item.date)
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [{
+        name: '完成数量',
+        type: 'line',
+        data: trendData.map(item => item.count),
+        itemStyle: {
+          color: '#45B7D1'
+        },
+        lineStyle: {
+          width: 3
+        },
+        smooth: true
+      }]
+    };
+  }
+
+  // 生成学习活跃度柱状图配置
+  getLearningActivityChartOptions(): ChartOptions {
+    return {
+      tooltip: {
+        trigger: 'axis'
+      },
+      grid: {
+        left: '10%',
+        right: '10%',
+        bottom: '10%',
+        top: '10%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [{
+        name: '学习时长',
+        type: 'bar',
+        data: [45, 52, 38, 65, 42, 28, 35],
+        itemStyle: {
+          color: '#96CEB4'
+        }
+      }]
+    };
   }
 
   async loadAllData() {
@@ -187,6 +409,80 @@ struct DataVisualizationPage {
     }
   }
 
+  // 生成品牌柱状图配置
+  getBrandBarChartOptions(): ChartOptions {
+    return {
+      title: {
+        text: '',
+        left: 'center',
+        textStyle: {
+          fontSize: 16,
+          fontWeight: 'bold'
+        }
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: this.brandData.map(item => item.label),
+        axisLabel: {
+          rotate: 45,
+          fontSize: 12
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: {
+          fontSize: 12
+        }
+      },
+      series: [{
+        name: '相机数量',
+        type: 'bar',
+        data: this.brandData.map(item => item.value),
+        itemStyle: {
+          color: '#FF6B35'
+        },
+        emphasis: {
+          itemStyle: {
+            color: '#FF6B35'
+          }
+        }
+      }]
+    };
+  }
+
+  // 生成品牌饼图配置
+  getBrandPieChartOptions(): ChartOptions {
+    const colors = ['#FF6B35', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3'];
+    return {
+      tooltip: {
+        trigger: 'item'
+      },
+      legend: {
+        orient: 'vertical',
+        left: 'left',
+        data: this.brandData.slice(0, 6).map(item => item.label)
+      },
+      series: [{
+        name: '品牌分布',
+        type: 'pie',
+        radius: ['0%', '70%'],
+        data: this.brandData.slice(0, 6).map(item => item.value)
+      }]
+    };
+  }
+
   build() {
     Column() {
       // 标题栏
@@ -304,46 +600,161 @@ struct DataVisualizationPage {
       Column({ space: 20 }) {
         // 品牌分布柱状图
         Column() {
-          ChartComponent({
-            data: this.brandData,
-            type: ChartType.BAR,
-            config: {
-              title: '相机品牌分布',
-              width: 350,
-              height: 250,
-              showLegend: false,
-              showGrid: true
-            }
+          Text('相机品牌分布')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.primary_text_color'))
+            .margin({ bottom: 16 })
+            .alignSelf(ItemAlign.Start)
+          
+          hmChart({
+            Options: this.getBrandBarChartOptions(),
+            myChart: this.brandChart
           })
         }
         .width('100%')
-        .padding(16)
+        .padding(20)
         .backgroundColor($r('app.color.surface_color'))
-        .borderRadius(12)
+        .borderRadius(16)
+        .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
         
         // 品牌分布饼图
         Column() {
-          ChartComponent({
-            data: this.brandData.slice(0, 6),
-            type: ChartType.PIE,
-            config: {
-              title: '主要品牌占比',
-              width: 300,
-              height: 300,
-              showLegend: true
-            }
+          Text('主要品牌占比')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.primary_text_color'))
+            .margin({ bottom: 16 })
+            .alignSelf(ItemAlign.Start)
+          
+          hmChart({
+            Options: this.getBrandPieChartOptions(),
+            myChart: this.brandChart
           })
         }
         .width('100%')
-        .padding(16)
+        .padding(20)
         .backgroundColor($r('app.color.surface_color'))
-        .borderRadius(12)
+        .borderRadius(16)
+        .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
       }
       .width('100%')
       .padding(16)
     }
     .width('100%')
+    .edgeEffect(EdgeEffect.Spring)
     .layoutWeight(1)
+  }
+
+
+
+  // 生成器材饼图配置
+  getEquipmentPieChartOptions(): ChartOptions {
+    const colors = ['#FF6B35', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3'];
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)'
+      },
+      legend: {
+        orient: 'vertical',
+        left: 'left',
+        data: this.equipmentData.map(item => item.label)
+      },
+      series: [{
+        name: '器材品牌',
+        type: 'pie',
+        radius: ['50%', '70%'],
+        center: ['60%', '50%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 10,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 16,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: this.equipmentData.map(item => item.value)
+      }]
+    };
+  }
+
+  // 生成价格范围柱状图配置
+  getPriceRangeChartOptions(): ChartOptions {
+    return {
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        }
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: this.priceRangeData.map(item => item.label),
+        axisLabel: {
+          fontSize: 12
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: {
+          fontSize: 12
+        }
+      },
+      series: [{
+        name: '器材数量',
+        type: 'bar',
+        data: this.priceRangeData.map(item => item.value),
+        itemStyle: {
+          color: '#4ECDC4'
+        },
+        emphasis: {
+          itemStyle: {
+            color: '#4ECDC4'
+          }
+        }
+      }]
+    };
+  }
+
+  // 生成分类饼图配置
+  getCategoryChartOptions(): ChartOptions {
+    const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57', '#FF9FF3'];
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)'
+      },
+      legend: {
+        orient: 'vertical',
+        left: 'left',
+        data: this.categoryData.map(item => item.label)
+      },
+      series: [{
+        name: '器材分类',
+        type: 'pie',
+        radius: ['0%', '70%'],
+        data: this.categoryData.map(item => item.value)
+      }]
+    };
   }
 
   @Builder
@@ -353,62 +764,67 @@ struct DataVisualizationPage {
         // 器材品牌分布
         if (this.equipmentData.length > 0) {
           Column() {
-            ChartComponent({
-              data: this.equipmentData,
-              type: ChartType.DOUGHNUT,
-              config: {
-                title: '我的器材品牌分布',
-                width: 300,
-                height: 300,
-                showLegend: true
-              }
+            Text('我的器材品牌分布')
+              .fontSize(18)
+              .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.primary_text_color'))
+              .margin({ bottom: 16 })
+              .alignSelf(ItemAlign.Start)
+            
+            hmChart({
+              Options: this.getEquipmentPieChartOptions(),
+              myChart: this.equipmentChart
             })
           }
           .width('100%')
-          .padding(16)
+          .padding(20)
           .backgroundColor($r('app.color.surface_color'))
-          .borderRadius(12)
+          .borderRadius(16)
+          .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
         }
         
         // 价格范围分布
         if (this.priceRangeData.length > 0) {
           Column() {
-            ChartComponent({
-              data: this.priceRangeData,
-              type: ChartType.BAR,
-              config: {
-                title: '器材价格范围分布',
-                width: 350,
-                height: 250,
-                showLegend: false,
-                showGrid: true
-              }
+            Text('器材价格范围分布')
+              .fontSize(18)
+              .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.primary_text_color'))
+              .margin({ bottom: 16 })
+              .alignSelf(ItemAlign.Start)
+            
+            hmChart({
+              Options: this.getPriceRangeChartOptions(),
+              myChart: this.priceChart
             })
           }
           .width('100%')
-          .padding(16)
+          .padding(20)
           .backgroundColor($r('app.color.surface_color'))
-          .borderRadius(12)
+          .borderRadius(16)
+          .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
         }
         
         // 器材分类分布
         if (this.categoryData.length > 0) {
           Column() {
-            ChartComponent({
-              data: this.categoryData,
-              type: ChartType.PIE,
-              config: {
-                title: '器材分类分布',
-                width: 300,
-                height: 300,
-                showLegend: true
-              }
+            Text('器材分类分布')
+              .fontSize(18)
+              .fontWeight(FontWeight.Bold)
+              .fontColor($r('app.color.primary_text_color'))
+              .margin({ bottom: 16 })
+              .alignSelf(ItemAlign.Start)
+            
+            hmChart({
+              Options: this.getCategoryChartOptions(),
+              myChart: this.equipmentChart
             })
           }
           .width('100%')
-          .padding(16)
+          .padding(20)
           .backgroundColor($r('app.color.surface_color'))
-          .borderRadius(12)
+          .borderRadius(16)
+          .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
         }
         
         // 空状态提示
@@ -438,6 +854,7 @@ struct DataVisualizationPage {
       .padding(16)
     }
     .width('100%')
+    .edgeEffect(EdgeEffect.Spring)
     .layoutWeight(1)
   }
 
@@ -447,151 +864,123 @@ struct DataVisualizationPage {
       Column({ space: 20 }) {
         // 测验完成率
         Column() {
-          ChartComponent({
-            data: this.quizData,
-            type: ChartType.BAR,
-            config: {
-              title: '各难度测验完成率',
-              width: 350,
-              height: 280,
-              showLegend: false,
-              showGrid: true,
-              colors: ['#4CAF50', '#FF9800', '#F44336']
-            }
+          Text('各难度测验完成率')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.primary_text_color'))
+            .margin({ bottom: 16 })
+          
+          hmChart({
+            Options: this.getQuizBarChartOptions(),
+            myChart: this.quizChart
           })
         }
         .width('100%')
-        .padding(16)
+        .padding(20)
         .backgroundColor($r('app.color.surface_color'))
-        .borderRadius(12)
+        .borderRadius(16)
+        .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
         
         // 测验总体统计
         Column() {
-          ChartComponent({
-            data: [
-              { label: '已完成', value: this.quizData.reduce((sum, item) => sum + item.value, 0) },
-              { label: '总题目', value: 100 }, // 假设总共100道题
-              { label: '正确率', value: Math.round(this.quizData.reduce((sum, item) => sum + item.value, 0) * 0.85) } // 假设85%正确率
-            ],
-            type: ChartType.DOUGHNUT,
-            config: {
-              title: '测验总体表现',
-              width: 300,
-              height: 300,
-              showLegend: true,
-              colors: ['#4CAF50', '#E0E0E0', '#2196F3']
-            }
+          Text('测验总体表现')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.primary_text_color'))
+            .margin({ bottom: 16 })
+          
+          hmChart({
+            Options: this.getQuizOverallChartOptions(),
+            myChart: this.quizOverallChart
           })
         }
         .width('100%')
-        .padding(16)
+        .padding(20)
         .backgroundColor($r('app.color.surface_color'))
-        .borderRadius(12)
+        .borderRadius(16)
+        .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
         
         // 学习路径进度
         Column() {
-          ChartComponent({
-            data: this.learningData,
-            type: ChartType.DOUGHNUT,
-            config: {
-              title: '学习路径进度',
-              width: 300,
-              height: 300,
-              showLegend: true,
-              colors: ['#4CAF50', '#2196F3', '#E0E0E0']
-            }
+          Text('学习路径进度')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.primary_text_color'))
+            .margin({ bottom: 16 })
+          
+          hmChart({
+            Options: this.getLearningProgressChartOptions(),
+            myChart: this.learningChart
           })
         }
         .width('100%')
-        .padding(16)
+        .padding(20)
         .backgroundColor($r('app.color.surface_color'))
-        .borderRadius(12)
+        .borderRadius(16)
+        .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
         
         // 测验分类统计
         Column() {
-          ChartComponent({
-            data: [
-              { label: '相机基础', value: 25 },
-              { label: '摄影技巧', value: 18 },
-              { label: '后期处理', value: 12 },
-              { label: '器材知识', value: 20 },
-              { label: '构图理论', value: 15 }
-            ],
-            type: ChartType.PIE,
-            config: {
-              title: '测验题目分类分布',
-              width: 300,
-              height: 300,
-              showLegend: true,
-              colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FECA57']
-            }
+          Text('测验题目分类分布')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.primary_text_color'))
+            .margin({ bottom: 16 })
+          
+          hmChart({
+            Options: this.getQuizCategoryChartOptions(),
+            myChart: this.quizCategoryChart
           })
         }
         .width('100%')
-        .padding(16)
+        .padding(20)
         .backgroundColor($r('app.color.surface_color'))
-        .borderRadius(12)
+        .borderRadius(16)
+        .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
         
         // 测验历史趋势
         Column() {
-          ChartComponent({
-            data: [
-              { label: '第1周', value: 12 },
-              { label: '第2周', value: 18 },
-              { label: '第3周', value: 25 },
-              { label: '第4周', value: 22 },
-              { label: '第5周', value: 28 },
-              { label: '第6周', value: 35 },
-              { label: '本周', value: 30 }
-            ],
-            type: ChartType.LINE,
-            config: {
-              title: '测验完成数量趋势',
-              width: 350,
-              height: 280,
-              showLegend: false,
-              showGrid: true,
-              colors: ['#2196F3']
-            }
+          Text('测验完成数量趋势')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.primary_text_color'))
+            .margin({ bottom: 16 })
+          
+          hmChart({
+            Options: this.getQuizTrendChartOptions(),
+            myChart: this.quizTrendChart
           })
         }
         .width('100%')
-        .padding(16)
+        .padding(20)
         .backgroundColor($r('app.color.surface_color'))
-        .borderRadius(12)
+        .borderRadius(16)
+        .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
         
         // 学习活跃度
         Column() {
-          ChartComponent({
-            data: [
-              { label: '周一', value: 85 },
-              { label: '周二', value: 92 },
-              { label: '周三', value: 78 },
-              { label: '周四', value: 96 },
-              { label: '周五', value: 88 },
-              { label: '周六', value: 94 },
-              { label: '周日', value: 90 }
-            ],
-            type: ChartType.BAR,
-            config: {
-              title: '本周学习活跃度',
-              width: 350,
-              height: 280,
-              showLegend: false,
-              showGrid: true,
-              colors: ['#4CAF50']
-            }
+          Text('本周学习活跃度')
+            .fontSize(18)
+            .fontWeight(FontWeight.Bold)
+            .fontColor($r('app.color.primary_text_color'))
+            .margin({ bottom: 16 })
+          
+          hmChart({
+            Options: this.getLearningActivityChartOptions(),
+            myChart: this.learningActivityChart
           })
         }
         .width('100%')
-        .padding(16)
+        .padding(20)
         .backgroundColor($r('app.color.surface_color'))
-        .borderRadius(12)
+        .borderRadius(16)
+        .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
       }
       .width('100%')
       .padding(16)
     }
     .width('100%')
+    .edgeEffect(EdgeEffect.Spring)
     .layoutWeight(1)
   }
 }

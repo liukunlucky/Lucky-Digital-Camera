@@ -244,6 +244,7 @@ struct FavoritePage {
         }
         .width('100%')
         .layoutWeight(1)
+        .edgeEffect(EdgeEffect.Spring)
         .backgroundColor($r('app.color.background_color'))
         .align(Alignment.TopStart)
       }

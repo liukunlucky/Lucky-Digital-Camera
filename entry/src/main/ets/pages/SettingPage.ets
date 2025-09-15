@@ -678,10 +678,15 @@ struct SettingPage {
                   bottom: 16
                 })
                 .onClick(() => {
-                  promptAction.showToast({
-                    message: '感谢您的支持！',
-                    duration: 2000
-                  });
+                  const context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
+                  const link: string = 'https://appgallery.huawei.com/app/detail?id=com.lucky.digital_remind';
+                  context.openLink(link, { appLinkingOnly: false })
+                    .then(() => {
+                      console.log('OpenLink success.');
+                    })
+                    .catch((error: BusinessError) => {
+                      console.log(`Openlink failed. Code: ${error.code}, message is ${error.message}`);
+                    });
                 })
 
                 // 分隔线
@@ -745,9 +750,10 @@ struct SettingPage {
           .width('100%')
           .padding({ left: 24, right: 24 })
         }
-        .padding({ bottom: 100 }) // 避免底部tab遮挡
+        .padding({ bottom: 20 }) // 避免底部tab遮挡
       }
       .layoutWeight(1)
+      .edgeEffect(EdgeEffect.Spring)
       .scrollable(ScrollDirection.Vertical)
       .scrollBar(BarState.Auto)
     }

@@ -512,6 +512,7 @@ struct LearningPathPage {
         }
         .width('100%')
         .layoutWeight(1)
+        .edgeEffect(EdgeEffect.Spring)
         .backgroundColor('#FFFFFF')
 
         // 底部完成按钮

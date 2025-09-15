@@ -25,6 +25,7 @@ export struct ComparePage {
     this.loadEquipmentData();
     this.handleRouterParams();
     this.handleAppStorageCamera();
+    this.loadAllCameras()
   }
 
   // 监听我的器材数据刷新
@@ -107,40 +108,135 @@ export struct ComparePage {
       .justifyContent(FlexAlign.Center)
       .backgroundColor($r('app.color.surface_color'))
       .shadow({ radius: 2, color: $r('app.color.shadow_color'), offsetX: 0, offsetY: 1 })
-      .bindSheet($$this.showSelector2, this.EquipmentSelector(2), {
-        height: '60%',
-        showClose: false,
-        dragBar: true
-      })
 
-      // 对比内容
-      Column() {
+      // 可滚动的对比内容
+      Scroll() {
+        Column() {
+        // 相机图片展示区域
+        if (this.selectedEquipment1 && this.selectedEquipment2) {
+          Row() {
+            // 器材1图片
+            Column() {
+              if (this.selectedEquipment1.cameraDataItem) {
+                Image($rawfile(cameraDataJsonService.getCameraImagePath(this.selectedEquipment1.cameraDataItem)))
+                  .width(140)
+                  .height(105)
+                  .borderRadius(12)
+                  .objectFit(ImageFit.Cover)
+                  .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
+                  .alt($r('app.media.foreground'))
+              } else {
+                Column() {
+                  Text('📷')
+                    .fontSize(40)
+                    .fontColor($r('app.color.tertiary_text_color'))
+                }
+                .width(140)
+                .height(105)
+                .backgroundColor($r('app.color.divider_color'))
+                .borderRadius(12)
+                .justifyContent(FlexAlign.Center)
+              }
+              
+              Text(this.selectedEquipment1.equipmentName)
+                .fontSize(14)
+                .fontWeight(FontWeight.Medium)
+                .fontColor($r('app.color.primary_text_color'))
+                .margin({ top: 12 })
+                .maxLines(2)
+                .textAlign(TextAlign.Center)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Center)
+            
+            // VS标识
+            Column() {
+              Text('VS')
+                .fontSize(24)
+                .fontWeight(FontWeight.Bold)
+                .fontColor($r('app.color.brand_color'))
+                .textShadow({ radius: 2, color: 'rgba(255,107,53,0.3)', offsetX: 0, offsetY: 2 })
+            }
+            .width(60)
+            .justifyContent(FlexAlign.Center)
+            
+            // 器材2图片
+            Column() {
+              if (this.selectedEquipment2.cameraDataItem) {
+                Image($rawfile(cameraDataJsonService.getCameraImagePath(this.selectedEquipment2.cameraDataItem)))
+                  .width(140)
+                  .height(105)
+                  .borderRadius(12)
+                  .objectFit(ImageFit.Cover)
+                  .shadow({ radius: 8, color: 'rgba(0,0,0,0.1)', offsetX: 0, offsetY: 4 })
+                  .alt($r('app.media.foreground'))
+              } else {
+                Column() {
+                  Text('📷')
+                    .fontSize(40)
+                    .fontColor($r('app.color.tertiary_text_color'))
+                }
+                .width(140)
+                .height(105)
+                .backgroundColor($r('app.color.divider_color'))
+                .borderRadius(12)
+                .justifyContent(FlexAlign.Center)
+              }
+              
+              Text(this.selectedEquipment2.equipmentName)
+                .fontSize(14)
+                .fontWeight(FontWeight.Medium)
+                .fontColor($r('app.color.primary_text_color'))
+                .margin({ top: 12 })
+                .maxLines(2)
+                .textAlign(TextAlign.Center)
+                .textOverflow({ overflow: TextOverflow.Ellipsis })
+            }
+            .layoutWeight(1)
+            .alignItems(HorizontalAlign.Center)
+          }
+          .width('100%')
+          .padding({ left: 20, right: 20, top: 20, bottom: 24 })
+          .backgroundColor($r('app.color.surface_color'))
+          .borderRadius({bottomLeft: 16, bottomRight: 16})
+          .margin({ left: 16, right: 16, bottom: 16 })
+          .shadow({ radius: 6, color: 'rgba(0,0,0,0.08)', offsetX: 0, offsetY: 2 })
+        }
+
         // 选择器材区域
         Row() {
           // 器材1选择
           Column() {
             Text('器材1')
               .fontSize(14)
+              .fontWeight(FontWeight.Medium)
               .fontColor($r('app.color.secondary_text_color'))
               .margin({ bottom: 8 })
 
-            Button(this.selectedEquipment1 ? this.selectedEquipment1.equipmentName : '选择器材')
+            Button(this.selectedEquipment1 ? this.selectedEquipment1.equipmentName : '点击选择器材')
               .width('100%')
-              .height(48)
+              .height(52)
               .fontSize(14)
               .fontColor(this.selectedEquipment1 ? $r('app.color.primary_text_color') : $r('app.color.secondary_text_color'))
-              .backgroundColor($r('app.color.divider_color'))
-              .borderRadius(8)
+              .backgroundColor($r('app.color.card_background_color'))
+              .borderRadius(12)
+              .border({ width: 1, color: $r('app.color.divider_color') })
               .onClick(() => {
                 this.showSelector1 = true;
               })
           }
           .layoutWeight(1)
           .margin({ right: 8 })
+          .bindSheet($$this.showSelector1, this.EquipmentSelector(1), {
+            height: '60%',
+            showClose: false,
+            dragBar: true
+          })
 
           // VS标识
           Text('VS')
-            .fontSize(16)
+            .fontSize(18)
             .fontWeight(FontWeight.Bold)
             .fontColor($r('app.color.brand_color'))
             .margin({ left: 8, right: 8 })
@@ -149,37 +245,48 @@ export struct ComparePage {
           Column() {
             Text('器材2')
               .fontSize(14)
+              .fontWeight(FontWeight.Medium)
               .fontColor($r('app.color.secondary_text_color'))
               .margin({ bottom: 8 })
 
-            Button(this.selectedEquipment2 ? this.selectedEquipment2.equipmentName : '选择器材')
+            Button(this.selectedEquipment2 ? this.selectedEquipment2.equipmentName : '点击选择器材')
               .width('100%')
-              .height(48)
+              .height(52)
               .fontSize(14)
               .fontColor(this.selectedEquipment2 ? $r('app.color.primary_text_color') : $r('app.color.secondary_text_color'))
-              .backgroundColor($r('app.color.divider_color'))
-              .borderRadius(8)
+              .backgroundColor($r('app.color.card_background_color'))
+              .borderRadius(12)
+              .border({ width: 1, color: $r('app.color.divider_color') })
               .onClick(() => {
                 this.showSelector2 = true;
               })
           }
           .layoutWeight(1)
           .margin({ left: 8 })
+          .bindSheet($$this.showSelector2, this.EquipmentSelector(2), {
+            height: '60%',
+            showClose: false,
+            dragBar: true
+          })
         }
         .width('100%')
-        .padding(16)
+        .padding({ left: 20, right: 20, top: 16, bottom: 16 })
         .backgroundColor($r('app.color.surface_color'))
+        .borderRadius({bottomLeft: 16, bottomRight: 16})
+        .margin({ left: 16, right: 16, bottom: 16 })
+        .shadow({ radius: 6, color: 'rgba(0,0,0,0.08)', offsetX: 0, offsetY: 2 })
 
         // 一键清空按钮
         if (this.selectedEquipment1 || this.selectedEquipment2) {
           Row() {
             Button('一键清空')
               .fontSize(14)
-              .fontColor($r('app.color.brand_color'))
+              .fontWeight(FontWeight.Medium)
               .backgroundColor('transparent')
-              .border({ width: 1, color: $r('app.color.brand_color') })
-              .borderRadius(6)
-              .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+              .fontColor($r('app.color.brand_color'))
+              .border({ width: 1.5, color: $r('app.color.brand_color') })
+              .borderRadius(8)
+              .padding({ left: 20, right: 20, top: 10, bottom: 10 })
               .onClick(() => {
                 this.selectedEquipment1 = null;
                 this.selectedEquipment2 = null;
@@ -187,8 +294,7 @@ export struct ComparePage {
           }
           .width('100%')
           .justifyContent(FlexAlign.Center)
-          .padding({ top: 8, bottom: 8, left: 16, right: 16 })
-          .backgroundColor($r('app.color.surface_color'))
+          .padding({ top: 8, bottom: 16, left: 16, right: 16 })
         }
 
         // 对比结果
@@ -197,35 +303,41 @@ export struct ComparePage {
             equipment1: this.selectedEquipment1,
             equipment2: this.selectedEquipment2
           })
-            .layoutWeight(1)
+            .margin({ left: 16, right: 16 })
         } else {
           Column() {
             Image($r('app.media.icon_compare'))
-              .width(48)
-              .height(48)
+              .width(64)
+              .height(64)
               .fillColor($r('app.color.tertiary_text_color'))
-              .margin({ bottom: 12 })
+              .margin({ bottom: 16 })
 
             Text('请选择两个器材进行对比')
               .fontSize(16)
               .fontColor($r('app.color.secondary_text_color'))
+              .fontWeight(FontWeight.Medium)
+              
+            Text('选择器材后可查看详细参数对比')
+              .fontSize(14)
+              .fontColor($r('app.color.tertiary_text_color'))
+              .margin({ top: 8 })
           }
           .width('100%')
           .layoutWeight(1)
           .justifyContent(FlexAlign.Center)
           .backgroundColor($r('app.color.background_color'))
+          .margin({ left: 16, right: 16 })
+          .borderRadius(16)
         }
+        }
+        .width('100%')
       }
       .width('100%')
       .layoutWeight(1)
+      .edgeEffect(EdgeEffect.Spring)
+      .height('100%')
     }
-    .width('100%')
-    .height('100%')
-    .bindSheet($$this.showSelector1, this.EquipmentSelector(1), {
-      height: '60%',
-      showClose: false,
-      dragBar: true
-    })
+    .backgroundColor($r('app.color.background_color'))
   }
 
   @Builder
@@ -455,37 +567,34 @@ export struct ComparePage {
         })
       
       // Tab切换
-      Row() {
+      Row({space: 25}) {
         Button('我的器材')
-          .width('50%')
+          .width('40%')
           .height(40)
           .fontSize(14)
           .fontWeight(this.selectedTab === 0 ? FontWeight.Bold : FontWeight.Normal)
           .fontColor(this.selectedTab === 0 ? '#FFFFFF' : $r('app.color.secondary_text_color'))
-          .backgroundColor(this.selectedTab === 0 ? $r('app.color.brand_color') : 'transparent')
+          .backgroundColor(this.selectedTab === 0 ? $r('app.color.brand_color') : $r('app.color.card_background_color'))
           .borderRadius(0)
           .onClick(() => {
             this.selectedTab = 0;
           })
         
         Button('全部相机')
-          .width('50%')
+          .width('40%')
           .height(40)
           .fontSize(14)
           .fontWeight(this.selectedTab === 1 ? FontWeight.Bold : FontWeight.Normal)
           .fontColor(this.selectedTab === 1 ? '#FFFFFF' : $r('app.color.secondary_text_color'))
-          .backgroundColor(this.selectedTab === 1 ? $r('app.color.brand_color') : 'transparent')
+          .backgroundColor(this.selectedTab === 1 ? $r('app.color.brand_color') : $r('app.color.card_background_color'))
           .borderRadius(0)
           .onClick(async () => {
             this.selectedTab = 1;
-            // 懒加载全部相机数据
-            if (!this.isAllCamerasLoaded) {
-              await this.loadAllCameras();
-            }
           })
       }
       .width('calc(100% - 32vp)')
       .margin({ left: 16, right: 16, bottom: 16 })
+      .justifyContent(FlexAlign.Center)
       .backgroundColor($r('app.color.divider_color'))
       .borderRadius(8)
       

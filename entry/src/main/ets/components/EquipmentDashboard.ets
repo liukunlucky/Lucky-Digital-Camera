@@ -272,6 +272,7 @@ export struct EquipmentDashboard {
       .padding({ left: 16, right: 16, bottom: 20 })
     }
     .width('100%')
+    .edgeEffect(EdgeEffect.Spring)
     .layoutWeight(1)
   }
 
@@ -467,6 +468,7 @@ export struct EquipmentDashboard {
       .padding({ left: 16, right: 16, bottom: 20 })
     }
     .width('100%')
+    .edgeEffect(EdgeEffect.Spring)
     .layoutWeight(1)
   }
 
