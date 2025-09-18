@@ -218,7 +218,7 @@ struct HomePage {
           .borderRadius(20)
           .backgroundColor($r('app.color.divider_color'))
           .fontColor($r('app.color.primary_text_color'))
-          .placeholderColor($r('app.color.secondary_text_color'))
+          .placeholderColor($r('app.color.placeholder_text_color'))
           .padding({ left: 16, right: 16 })
           .onChange((value: string) => {
             this.onSearchTextChange(value);
@@ -333,7 +333,7 @@ struct HomePage {
             .borderRadius(8)
             .backgroundColor($r('app.color.surface_color'))
             .fontColor($r('app.color.primary_text_color'))
-            .placeholderColor($r('app.color.secondary_text_color'))
+            .placeholderColor($r('app.color.placeholder_text_color'))
             .padding({ left: 16, right: 16 })
             .border({
               width: 1,
@@ -594,26 +594,24 @@ struct HomePage {
       .layoutWeight(1)
       .justifyContent(FlexAlign.Center)
 
-      // 操作按钮区域
-      Row({ space: 6 }) {
-        // 收藏按钮
-        Column() {
-          Image($r('app.media.icon_like'))
-            .width(20)
-            .height(20)
-            .fillColor(this.isFavorite(camera) ? '#FF6B6B' : $r('app.color.secondary_text_color'))
-          Text(this.isFavorite(camera) ? '已收藏' : '收藏')
-            .fontSize(8)
-            .fontColor(this.isFavorite(camera) ? '#FF6B6B' : $r('app.color.secondary_text_color'))
-        }
-        .padding(4)
-        .borderRadius(3)
-        .backgroundColor(this.isFavorite(camera) ? '#FFE5E5' : $r('app.color.divider_color'))
-        .onClick(() => {
-          this.onFavoriteClick(camera);
-        })
+      Column() {
+        Image($r('app.media.icon_like'))
+          .width(20)
+          .height(20)
+          .fillColor(this.isFavorite(camera) ? '#FF6B6B' : $r('app.color.secondary_text_color'))
+        Text(this.isFavorite(camera) ? '已收藏' : '收藏')
+          .fontSize(8)
+          .fontColor(this.isFavorite(camera) ? '#FF6B6B' : $r('app.color.secondary_text_color'))
       }
-      .alignItems(VerticalAlign.Center)
+      .width(36)
+      .height(36)
+      .justifyContent(FlexAlign.Center)
+      .alignItems(HorizontalAlign.Center)
+      .borderRadius(6)
+      .backgroundColor(this.isFavorite(camera) ? '#FFE5E5' : $r('app.color.divider_color'))
+      .onClick(() => {
+        this.onFavoriteClick(camera);
+      })
     }
     .width('100%')
     .padding(12)

@@ -168,7 +168,7 @@ export struct SampleGalleryPage {
         .borderRadius(20)
         .backgroundColor($r('app.color.divider_color'))
         .fontColor($r('app.color.primary_text_color'))
-        .placeholderColor($r('app.color.secondary_text_color'))
+        .placeholderColor($r('app.color.placeholder_text_color'))
         .padding({ left: 16, right: 16 })
         .onChange((value: string) => {
           this.searchKeyword = value;

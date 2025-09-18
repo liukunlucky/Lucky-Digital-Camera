@@ -33,6 +33,10 @@
       "value": "#666666"
     },
     {
+      "name": "placeholder_text_color",
+      "value": "#4A4A4A"
+    },
+    {
       "name": "border_color",
       "value": "#404040"
     },

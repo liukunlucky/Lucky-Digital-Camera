@@ -187,10 +187,9 @@ struct FavoritePage {
       } else if (this.favoriteList.length === 0) {
         // 空状态
         Column() {
-          Image($r('app.media.icon_like'))
-            .width(80)
-            .height(80)
-            .fillColor($r('app.color.tertiary_text_color'))
+          Image($r('app.media.ic_empty'))
+            .width(173)
+            .height(128)
             .margin({ bottom: 16 })
 
           Text('还没有收藏任何相机')

@@ -37,6 +37,10 @@
       "value": "#BDC3C7"
     },
     {
+      "name": "placeholder_text_color",
+      "value": "#D5DBDB"
+    },
+    {
       "name": "border_color",
       "value": "#E8E8E8"
     },

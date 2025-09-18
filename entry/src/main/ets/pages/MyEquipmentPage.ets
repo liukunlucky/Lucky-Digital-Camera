@@ -16,6 +16,8 @@ export struct MyEquipmentPage {
   @State transactionPrice: string = '';
   @State transactionNotes: string = '';
   @State cameraList: CameraDataItem[] = [];
+  @State filteredCameraList: CameraDataItem[] = [];
+  @State searchKeyword: string = '';
   @State showCameraSelector: boolean = false;
   @State showDatePicker: boolean = false;
   @State currentTabIndex: number = 0; // 0: 我的器材, 1: 我的收藏
@@ -58,6 +60,21 @@ export struct MyEquipmentPage {
 
   private async loadCameraData() {
     this.cameraList = await cameraDataJsonService.getAllCameras();
+    this.filteredCameraList = this.cameraList;
+  }
+
+  // 搜索过滤相机
+  private filterCameras() {
+    if (!this.searchKeyword.trim()) {
+      this.filteredCameraList = this.cameraList;
+    } else {
+      const keyword = this.searchKeyword.toLowerCase();
+      this.filteredCameraList = this.cameraList.filter(camera => 
+        camera.Brand.toLowerCase().includes(keyword) ||
+        camera.Model.toLowerCase().includes(keyword) ||
+        (camera.SensorType && camera.SensorType.toLowerCase().includes(keyword))
+      );
+    }
   }
 
   private async addEquipment() {
@@ -375,6 +392,7 @@ export struct MyEquipmentPage {
       .bindSheet($$this.showAddSheet, this.AddEquipmentSheet(), {
         height: '60%',
         dragBar: true,
+        showClose: false,
         backgroundColor: $r('app.color.surface_color'),
         onDisappear: () => {
           this.showAddSheet = false;
@@ -516,10 +534,9 @@ export struct MyEquipmentPage {
     } else if (this.favoritesList.length === 0) {
       // 空状态
       Column() {
-        Image($r('app.media.icon_like'))
-          .width(80)
-          .height(80)
-          .fillColor($r('app.color.tertiary_text_color'))
+        Image($r('app.media.ic_empty'))
+          .width(173)
+          .height(128)
           .margin({ bottom: 16 })
 
         Text('还没有收藏任何相机')
@@ -961,8 +978,45 @@ export struct MyEquipmentPage {
         .fontColor($r('app.color.primary_text_color'))
         .margin({ top: 20, bottom: 20 })
 
+      // 搜索框
+      Row() {
+        Image($r('app.media.icon_search'))
+          .width(20)
+          .height(20)
+          .margin({ left: 12, right: 8 })
+
+        TextInput({ placeholder: '搜索品牌、型号或传感器类型', text: this.searchKeyword })
+          .layoutWeight(1)
+          .height(40)
+          .fontSize(14)
+          .backgroundColor('transparent')
+          .border({ width: 0 })
+          .placeholderColor($r('app.color.placeholder_text_color'))
+          .fontColor($r('app.color.primary_text_color'))
+          .onChange((value: string) => {
+            this.searchKeyword = value;
+            this.filterCameras();
+          })
+
+        if (this.searchKeyword) {
+          Image($r('app.media.icon_close'))
+            .width(20)
+            .height(20)
+            .fillColor($r('app.color.tertiary_text_color'))
+            .margin({ left: 8, right: 12 })
+            .onClick(() => {
+              this.searchKeyword = '';
+              this.filterCameras();
+            })
+        }
+      }
+      .height(48)
+      .backgroundColor($r('app.color.divider_color'))
+      .borderRadius(24)
+      .margin({ left: 24, right: 24, bottom: 16 })
+
       List() {
-        ForEach(this.cameraList, (camera: CameraDataItem) => {
+        ForEach(this.filteredCameraList, (camera: CameraDataItem) => {
           ListItem() {
             Row() {
               Image($rawfile(cameraDataJsonService.getCameraImagePath(camera)))
